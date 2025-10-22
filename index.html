@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RREF Calculator - Solve Systems of Linear Equations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input[type="number"] {
+            width: 150px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .matrix-input {
+            margin-top: 20px;
+        }
+
+        .matrix-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .matrix-row input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .matrix-row input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .separator {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0 5px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .secondary-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-section.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .matrix-display {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.8;
+        }
+
+        .matrix-display table {
+            border-collapse: collapse;
+            margin: 10px auto;
+        }
+
+        .matrix-display td {
+            padding: 8px 15px;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .augmented-separator {
+            border-left: 3px solid #667eea;
+            padding-left: 15px !important;
+        }
+
+        .solution-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #667eea;
+        }
+
+        .solution-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .solution-item {
+            font-size: 1.2em;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .no-solution {
+            background: #ffe0e0;
+            border-color: #ff4444;
+        }
+
+        .no-solution .solution-title {
+            color: #ff4444;
+        }
+
+        .infinite-solution {
+            background: #fff4e0;
+            border-color: #ff9800;
+        }
+
+        .infinite-solution .solution-title {
+            color: #ff9800;
+        }
+
+        .toggle-steps {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .steps-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .steps-container.expanded {
+            max-height: 10000px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-box strong {
+            color: #1976d2;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .matrix-row input {
+                width: 60px;
+                padding: 6px;
+                font-size: 12px;
+            }
+
+            button {
+                padding: 12px 30px;
+                font-size: 14px;
+            }
+        }
+
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .example-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 RREF Calculator</h1>
+            <p class="subtitle">Solve Systems of Linear Equations Using Reduced Row Echelon Form</p>
+        </header>
+
+        <div class="input-section">
+            <div class="info-box">
+                <strong>How to use:</strong> Enter the number of equations and variables, then input your augmented matrix [A | b]. 
+                The calculator will transform it to RREF form and provide the solution!
+            </div>
+
+            <div class="form-group">
+                <label>Number of Equations (rows):</label>
+                <input type="number" id="numRows" min="1" max="10" value="2">
+            </div>
+
+            <div class="form-group">
+                <label>Number of Variables (columns):</label>
+                <input type="number" id="numCols" min="1" max="10" value="2">
+            </div>
+
+            <button onclick="generateMatrix()">Generate Matrix Input</button>
+
+            <div class="example-buttons">
+                <button class="example-btn" onclick="loadExample(1)">Example 1: 2×2 Unique</button>
+                <button class="example-btn" onclick="loadExample(2)">Example 2: 3×3 Unique</button>
+                <button class="example-btn" onclick="loadExample(3)">Example 3: Infinite Solutions</button>
+                <button class="example-btn" onclick="loadExample(4)">Example 4: No Solution</button>
+            </div>
+
+            <div id="matrixInputContainer"></div>
+
+            <div style="margin-top: 20px;">
+                <button onclick="solveSystem()">🚀 Solve System</button>
+                <button class="secondary-btn" onclick="clearAll()">Clear All</button>
+            </div>
+        </div>
+
+        <div id="resultSection" class="result-section"></div>
+    </div>
+
+    <script>
+        class Fraction {
+            constructor(numerator, denominator = 1) {
+                if (denominator === 0) throw new Error("Denominator cannot be zero");
+                
+                const gcd = this.gcd(Math.abs(numerator), Math.abs(denominator));
+                this.num = numerator / gcd;
+                this.den = denominator / gcd;
+                
+                if (this.den < 0) {
+                    this.num = -this.num;
+                    this.den = -this.den;
+                }
+            }
+
+            gcd(a, b) {
+                return b === 0 ? a : this.gcd(b, a % b);
+            }
+
+            static fromDecimal(decimal) {
+                const precision = 1000000;
+                const num = Math.round(decimal * precision);
+                return new Fraction(num, precision);
+            }
+
+            add(other) {
+                return new Fraction(
+                    this.num * other.den + other.num * this.den,
+                    this.den * other.den
+                );
+            }
+
+            subtract(other) {
+                return new Fraction(
+                    this.num * other.den - other.num * this.den,
+                    this.den * other.den
+                );
+            }
+
+            multiply(other) {
+                return new Fraction(this.num * other.num, this.den * other.den);
+            }
+
+            divide(other) {
+                return new Fraction(this.num * other.den, this.den * other.num);
+            }
+
+            isZero() {
+                return this.num === 0;
+            }
+
+            isOne() {
+                return this.num === this.den;
+            }
+
+            negate() {
+                return new Fraction(-this.num, this.den);
+            }
+
+            toString() {
+                if (this.den === 1) return this.num.toString();
+                return `${this.num}/${this.den}`;
+            }
+
+            toNumber() {
+                return this.num / this.den;
+            }
+        }
+
+        let currentMatrix = [];
+        let steps = [];
+
+        function generateMatrix() {
+            const rows = parseInt(document.getElementById('numRows').value);
+            const cols = parseInt(document.getElementById('numCols').value);
+
+            if (rows < 1 || cols < 1 || rows > 10 || cols > 10) {
+                alert('Please enter valid dimensions (1-10 for both)');
+                return;
+            }
+
+            const container = document.getElementById('matrixInputContainer');
+            let html = '<div class="matrix-input"><h3>Enter Augmented Matrix [A | b]:</h3>';
+
+            for (let i = 0; i < rows; i++) {
+                html += '<div class="matrix-row">';
+                for (let j = 0; j < cols + 1; j++) {
+                    if (j === cols) {
+                        html += '<span class="separator">|</span>';
+                    }
+                    html += `<input type="text" id="cell_${i}_${j}" value="0" placeholder="0">`;
+                }
+                html += '</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function loadExample(exampleNum) {
+            let rows, cols, values;
+
+            switch(exampleNum) {
+                case 1: // 2×2 unique solution
+                    rows = 2; cols = 2;
+                    values = [[1, 1, 3], [2, -1, 0]];
+                    break;
+                case 2: // 3×3 unique solution
+                    rows = 3; cols = 3;
+                    values = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]];
+                    break;
+                case 3: // Infinite solutions
+                    rows = 2; cols = 3;
+                    values = [[1, 2, -1, 3], [2, 4, -2, 6]];
+                    break;
+                case 4: // No solution
+                    rows = 2; cols = 2;
+                    values = [[1, 1, 1], [1, 1, 2]];
+                    break;
+            }
+
+            document.getElementById('numRows').value = rows;
+            document.getElementById('numCols').value = cols;
+            generateMatrix();
+
+            setTimeout(() => {
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < values[i].length; j++) {
+                        document.getElementById(`cell_${i}_${j}`).value = values[i][j];
+                    }
+                }
+            }, 100);
+        }
+
+        function getMatrixFromInput() {
+            const rows = parseInt(document.getElementById('numRows').value);
+            const cols = parseInt(document.getElementById('numCols').value);
+            const matrix = [];
+
+            for (let i = 0; i < rows; i++) {
+                const row = [];
+                for (let j = 0; j < cols + 1; j++) {
+                    const input = document.getElementById(`cell_${i}_${j}`);
+                    if (!input) continue;
+                    
+                    const value = input.value.trim();
+                    if (value.includes('/')) {
+                        const parts = value.split('/');
+                        row.push(new Fraction(parseFloat(parts[0]), parseFloat(parts[1])));
+                    } else {
+                        row.push(Fraction.fromDecimal(parseFloat(value) || 0));
+                    }
+                }
+                matrix.push(row);
+            }
+
+            return matrix;
+        }
+
+        function matrixToHTML(matrix, title = "Matrix") {
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+
+            let html = `<div class="matrix-display">`;
+            html += `<strong>${title} [${rows}×${cols}]:</strong><table>`;
+
+            for (let i = 0; i < rows; i++) {
+                html += '<tr>';
+                for (let j = 0; j < cols; j++) {
+                    const className = (j === cols - 1) ? 'augmented-separator' : '';
+                    html += `<td class="${className}">${matrix[i][j].toString()}</td>`;
+                }
+                html += '</tr>';
+            }
+
+            html += '</table></div>';
+            return html;
+        }
+
+        function copyMatrix(matrix) {
+            return matrix.map(row => row.map(val => new Fraction(val.num, val.den)));
+        }
+
+        function swapRows(matrix, row1, row2) {
+            [matrix[row1], matrix[row2]] = [matrix[row2], matrix[row1]];
+        }
+
+        function multiplyRow(matrix, row, scalar) {
+            for (let j = 0; j < matrix[0].length; j++) {
+                matrix[row][j] = matrix[row][j].multiply(scalar);
+            }
+        }
+
+        function addMultipleOfRow(matrix, targetRow, sourceRow, scalar) {
+            for (let j = 0; j < matrix[0].length; j++) {
+                matrix[targetRow][j] = matrix[targetRow][j].add(matrix[sourceRow][j].multiply(scalar));
+            }
+        }
+
+        function findPivot(matrix, startRow, col) {
+            for (let i = startRow; i < matrix.length; i++) {
+                if (!matrix[i][col].isZero()) {
+                    return i;
+                }
+            }
+            return null;
+        }
+
+        function rref(matrix) {
+            matrix = copyMatrix(matrix);
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+            steps = [];
+
+            steps.push({
+                matrix: copyMatrix(matrix),
+                description: "Initial augmented matrix [A | b]"
+            });
+
+            let currentRow = 0;
+
+            // Forward elimination
+            for (let col = 0; col < cols - 1; col++) {
+                if (currentRow >= rows) break;
+
+                const pivotRow = findPivot(matrix, currentRow, col);
+
+                if (pivotRow === null) {
+                    steps.push({
+                        matrix: copyMatrix(matrix),
+                        description: `Column ${col + 1}: No pivot found (free variable)`
+                    });
+                    continue;
+                }
+
+                if (pivotRow !== currentRow) {
+                    swapRows(matrix, currentRow, pivotRow);
+                    steps.push({
+                        matrix: copyMatrix(matrix),
+                        description: `Swap R${currentRow + 1} ↔ R${pivotRow + 1}`
+                    });
+                }
+
+                const pivotValue = matrix[currentRow][col];
+                if (!pivotValue.isOne()) {
+                    const scalar = new Fraction(1, 1).divide(pivotValue);
+                    multiplyRow(matrix, currentRow, scalar);
+                    steps.push({
+                        matrix: copyMatrix(matrix),
+                        description: `R${currentRow + 1} → R${currentRow + 1} / ${pivotValue.toString()}`
+                    });
+                }
+
+                for (let i = currentRow + 1; i < rows; i++) {
+                    if (!matrix[i][col].isZero()) {
+                        const factor = matrix[i][col].negate();
+                        addMultipleOfRow(matrix, i, currentRow, factor);
+                        steps.push({
+                            matrix: copyMatrix(matrix),
+                            description: `R${i + 1} → R${i + 1} + (${factor.toString()}) × R${currentRow + 1}`
+                        });
+                    }
+                }
+
+                currentRow++;
+            }
+
+            // Back substitution
+            for (let col = cols - 2; col >= 0; col--) {
+                let pivotRow = null;
+                for (let i = 0; i < rows; i++) {
+                    if (matrix[i][col].isOne()) {
+                        let isLeading = true;
+                        for (let j = 0; j < col; j++) {
+                            if (!matrix[i][j].isZero()) {
+                                isLeading = false;
+                                break;
+                            }
+                        }
+                        if (isLeading) {
+                            pivotRow = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (pivotRow === null) continue;
+
+                for (let i = 0; i < pivotRow; i++) {
+                    if (!matrix[i][col].isZero()) {
+                        const factor = matrix[i][col].negate();
+                        addMultipleOfRow(matrix, i, pivotRow, factor);
+                        steps.push({
+                            matrix: copyMatrix(matrix),
+                            description: `R${i + 1} → R${i + 1} + (${factor.toString()}) × R${pivotRow + 1}`
+                        });
+                    }
+                }
+            }
+
+            steps.push({
+                matrix: copyMatrix(matrix),
+                description: "✅ FINAL RREF: [I | s]"
+            });
+
+            return matrix;
+        }
+
+        function analyzeSolution(rrefMatrix) {
+            const rows = rrefMatrix.length;
+            const cols = rrefMatrix[0].length;
+            const nVars = cols - 1;
+
+            const pivotCols = [];
+            const pivotRows = [];
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < nVars; j++) {
+                    if (rrefMatrix[i][j].isOne()) {
+                        let isLeading = true;
+                        for (let k = 0; k < j; k++) {
+                            if (!rrefMatrix[i][k].isZero()) {
+                                isLeading = false;
+                                break;
+                            }
+                        }
+                        if (isLeading && !pivotCols.includes(j)) {
+                            pivotCols.push(j);
+                            pivotRows.push(i);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Check for inconsistency
+            for (let i = 0; i < rows; i++) {
+                let allZero = true;
+                for (let j = 0; j < nVars; j++) {
+                    if (!rrefMatrix[i][j].isZero()) {
+                        allZero = false;
+                        break;
+                    }
+                }
+                if (allZero && !rrefMatrix[i][nVars].isZero()) {
+                    return {
+                        type: 'no_solution',
+                        pivotCols: pivotCols,
+                        freeVars: [],
+                        message: 'Inconsistent system: No solution exists'
+                    };
+                }
+            }
+
+            const freeVars = [];
+            for (let j = 0; j < nVars; j++) {
+                if (!pivotCols.includes(j)) {
+                    freeVars.push(j);
+                }
+            }
+
+            if (freeVars.length === 0) {
+                const solution = new Array(nVars).fill(new Fraction(0, 1));
+                for (let idx = 0; idx < pivotCols.length; idx++) {
+                    solution[pivotCols[idx]] = rrefMatrix[pivotRows[idx]][nVars];
+                }
+                return {
+                    type: 'unique',
+                    pivotCols: pivotCols,
+                    freeVars: freeVars,
+                    solution: solution,
+                    message: 'Unique solution found'
+                };
+            } else {
+                const solution = {};
+                for (let idx = 0; idx < pivotCols.length; idx++) {
+                    const col = pivotCols[idx];
+                    const row = pivotRows[idx];
+                    solution[col] = {
+                        constant: rrefMatrix[row][nVars],
+                        freeVarCoeffs: {}
+                    };
+                    for (let fv of freeVars) {
+                        solution[col].freeVarCoeffs[fv] = rrefMatrix[row][fv].negate();
+                    }
+                }
+                return {
+                    type: 'infinite',
+                    pivotCols: pivotCols,
+                    freeVars: freeVars,
+                    solution: solution,
+                    message: `Infinite solutions: ${freeVars.length} free variable(s)`
+                };
+            }
+        }
+
+        function displaySolution(analysis, rrefMatrix) {
+            let html = '<div class="solution-box';
+            if (analysis.type === 'no_solution') html += ' no-solution';
+            if (analysis.type === 'infinite') html += ' infinite-solution';
+            html += '">';
+
+            html += `<div class="solution-title">✨ ${analysis.message}</div>`;
+
+            if (analysis.type === 'no_solution') {
+                html += '<p>The system is inconsistent. There exists a row [0 0 ... 0 | b] where b ≠ 0.</p>';
+            } else if (analysis.type === 'unique') {
+                html += '<div><strong>Solution:</strong></div>';
+                for (let i = 0; i < analysis.solution.length; i++) {
+                    html += `<div class="solution-item">x<sub>${i + 1}</sub> = ${analysis.solution[i].toString()}</div>`;
+                }
+            } else if (analysis.type === 'infinite') {
+                html += '<div><strong>Parametric Form:</strong></div>';
+                html += '<p>Let the free variables be parameters:</p>';
+                for (let i = 0; i < analysis.freeVars.length; i++) {
+                    const fv = analysis.freeVars[i];
+                    html += `<div class="solution-item">x<sub>${fv + 1}</sub> = t<sub>${i + 1}</sub></div>`;
+                }
+                html += '<p>Then the basic variables are:</p>';
+                
+                const sortedKeys = Object.keys(analysis.solution).map(Number).sort((a, b) => a - b);
+                for (let varIdx of sortedKeys) {
+                    const sol = analysis.solution[varIdx];
+                    let expr = sol.constant.toString();
+                    
+                    for (let i = 0; i < analysis.freeVars.length; i++) {
+                        const fv = analysis.freeVars[i];
+                        const coeff = sol.freeVarCoeffs[fv];
+                        if (!coeff.isZero()) {
+                            if (coeff.num > 0) {
+                                expr += ` + ${coeff.toString()}·t<sub>${i + 1}</sub>`;
+                            } else {
+                                expr += ` - ${coeff.negate().toString()}·t<sub>${i + 1}</sub>`;
+                            }
+                        }
+                    }
+                    html += `<div class="solution-item">x<sub>${varIdx + 1}</sub> = ${expr}</div>`;
+                }
+                html += '<p><em>where t<sub>1</sub>, t<sub>2</sub>, ... are free parameters (any real numbers)</em></p>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function solveSystem() {
+            try {
+                const matrix = getMatrixFromInput();
+                if (matrix.length === 0) {
+                    alert('Please generate a matrix first!');
+                    return;
+                }
+
+                currentMatrix = matrix;
+                const rrefMatrix = rref(matrix);
+                const analysis = analyzeSolution(rrefMatrix);
+
+                let html = '<h2 style="color: #667eea; margin-bottom: 20px;">📊 Solution Results</h2>';
+
+                // Display final RREF
+                html += '<div class="step">';
+                html += '<div class="step-title">Final RREF Matrix [I | s]:</div>';
+                html += matrixToHTML(rrefMatrix, "RREF");
+                html += '</div>';
+
+                // Display solution
+                html += displaySolution(analysis, rrefMatrix);
+
+                // Toggle for step-by-step
+                html += '<div class="toggle-steps">';
+                html += '<button onclick="toggleSteps()">📋 Show/Hide Step-by-Step Solution</button>';
+                html += '</div>';
+
+                html += '<div id="stepsContainer" class="steps-container">';
+                html += '<h3 style="color: #667eea; margin: 20px 0;">Step-by-Step Process:</h3>';
+                for (let i = 0; i < steps.length; i++) {
+                    html += '<div class="step">';
+                    html += `<div class="step-title">Step ${i + 1}: ${steps[i].description}</div>`;
+                    html += matrixToHTML(steps[i].matrix, `Matrix after step ${i + 1}`);
+                    html += '</div>';
+                }
+                html += '</div>';
+
+                document.getElementById('resultSection').innerHTML = html;
+                document.getElementById('resultSection').classList.add('active');
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        function toggleSteps() {
+            const container = document.getElementById('stepsContainer');
+            container.classList.toggle('expanded');
+        }
+
+        function clearAll() {
+            document.getElementById('matrixInputContainer').innerHTML = '';
+            document.getElementById('resultSection').innerHTML = '';
+            document.getElementById('resultSection').classList.remove('active');
+            document.getElementById('numRows').value = 2;
+            document.getElementById('numCols').value = 2;
+        }
+
+        // Initialize with a 2×2 matrix
+        window.onload = function() {
+            generateMatrix();
+        };
+    </script>
+</body>
+</html>
