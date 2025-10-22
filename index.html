@@ -198,6 +198,27 @@
             min-width: 60px;
         }
 
+        .matrix-display th {
+            padding: 8px 15px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            background: #f0f0f0;
+            font-size: 0.9em;
+        }
+
+        .matrix-display tr:nth-child(even) td {
+            background: #f8f9fa;
+        }
+
+        .matrix-display tr:nth-child(odd) td {
+            background: #ffffff;
+        }
+
+        .matrix-display td:nth-child(even) {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
         .augmented-separator {
             border-left: 3px solid #667eea;
             padding-left: 15px !important;
@@ -318,6 +339,8 @@
                 <strong>How to use:</strong> Enter the number of equations and variables, then input your augmented matrix [A | b]. 
                 The calculator will transform it to RREF form and provide the solution!
                 <br><br>
+                <strong>🚀 No Size Limits:</strong> This calculator supports unlimited dimensions! Solve 2×2, 10×10, 100×100, or even larger systems.
+                <br><br>
                 <strong>✨ Advanced:</strong> You can use mathematical expressions including:
                 <ul style="margin: 10px 0 0 20px;">
                     <li><strong>Trig functions:</strong> sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)</li>
@@ -329,12 +352,12 @@
 
             <div class="form-group">
                 <label>Number of Equations (rows):</label>
-                <input type="number" id="numRows" min="1" max="50" value="2">
+                <input type="number" id="numRows" min="1" value="2">
             </div>
 
             <div class="form-group">
                 <label>Number of Variables (columns):</label>
-                <input type="number" id="numCols" min="1" max="50" value="2">
+                <input type="number" id="numCols" min="1" value="2">
             </div>
 
             <button onclick="generateMatrix()">Generate Matrix Input</button>
@@ -484,17 +507,23 @@
             const rows = parseInt(document.getElementById('numRows').value);
             const cols = parseInt(document.getElementById('numCols').value);
 
-            if (rows < 1 || cols < 1 || rows > 50 || cols > 50) {
-                alert('Please enter valid dimensions (1-50 for both)');
+            if (rows < 1 || cols < 1) {
+                alert('Please enter valid dimensions (positive integers)');
                 return;
+            }
+
+            if (rows > 100 || cols > 100) {
+                const confirm = window.confirm(`You're about to create a ${rows}×${cols+1} matrix. This is quite large and may take some time to input and process. Continue?`);
+                if (!confirm) return;
             }
 
             const container = document.getElementById('matrixInputContainer');
             let html = '<div class="matrix-input"><h3>Enter Augmented Matrix [A | b]:</h3>';
-            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Tip: For large matrices, you can use fractions (1/2), decimals (0.5), or integers</p>';
+            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Tip: For large matrices, you can use fractions (1/2), decimals (0.5), or mathematical expressions</p>';
 
             for (let i = 0; i < rows; i++) {
                 html += '<div class="matrix-row">';
+                html += `<span style="min-width: 30px; color: #667eea; font-weight: 600;">R${i+1}</span>`;
                 for (let j = 0; j < cols + 1; j++) {
                     if (j === cols) {
                         html += '<span class="separator">|</span>';
@@ -600,18 +629,43 @@
             return matrix;
         }
 
-        function matrixToHTML(matrix, title = "Matrix") {
+        function matrixToHTML(matrix, title = "Matrix", showDecimals = false) {
             const rows = matrix.length;
             const cols = matrix[0].length;
 
             let html = `<div class="matrix-display">`;
             html += `<strong>${title} [${rows}×${cols}]:</strong><table>`;
+            
+            // Header row with column numbers
+            html += '<tr><th></th>'; // Empty corner cell
+            for (let j = 0; j < cols; j++) {
+                if (j === cols - 1) {
+                    html += '<th style="border-left: 3px solid #667eea;">b</th>';
+                } else {
+                    html += `<th>x${j + 1}</th>`;
+                }
+            }
+            html += '</tr>';
 
             for (let i = 0; i < rows; i++) {
                 html += '<tr>';
+                // Row label
+                html += `<th>R${i + 1}</th>`;
+                
                 for (let j = 0; j < cols; j++) {
                     const className = (j === cols - 1) ? 'augmented-separator' : '';
-                    html += `<td class="${className}">${matrix[i][j].toString()}</td>`;
+                    const value = matrix[i][j];
+                    let displayValue;
+                    
+                    if (showDecimals) {
+                        const decimal = value.toNumber();
+                        // Show fraction and decimal
+                        displayValue = `${value.toString()}<br><small style="color: #666;">(${decimal.toFixed(4)})</small>`;
+                    } else {
+                        displayValue = value.toString();
+                    }
+                    
+                    html += `<td class="${className}">${displayValue}</td>`;
                 }
                 html += '</tr>';
             }
@@ -850,7 +904,9 @@
             } else if (analysis.type === 'unique') {
                 html += '<div><strong>Solution:</strong></div>';
                 for (let i = 0; i < analysis.solution.length; i++) {
-                    html += `<div class="solution-item">x<sub>${i + 1}</sub> = ${analysis.solution[i].toString()}</div>`;
+                    const frac = analysis.solution[i];
+                    const decimal = frac.toNumber().toFixed(4);
+                    html += `<div class="solution-item">x<sub>${i + 1}</sub> = ${frac.toString()} <span style="color: #666; margin-left: 10px;">≈ ${decimal}</span></div>`;
                 }
             } else if (analysis.type === 'infinite') {
                 html += '<div><strong>Parametric Form:</strong></div>';
@@ -865,6 +921,7 @@
                 for (let varIdx of sortedKeys) {
                     const sol = analysis.solution[varIdx];
                     let expr = sol.constant.toString();
+                    let decimalExpr = sol.constant.toNumber().toFixed(4);
                     
                     for (let i = 0; i < analysis.freeVars.length; i++) {
                         const fv = analysis.freeVars[i];
@@ -872,12 +929,14 @@
                         if (!coeff.isZero()) {
                             if (coeff.num > 0) {
                                 expr += ` + ${coeff.toString()}·t<sub>${i + 1}</sub>`;
+                                decimalExpr += ` + ${coeff.toNumber().toFixed(4)}·t<sub>${i + 1}</sub>`;
                             } else {
                                 expr += ` - ${coeff.negate().toString()}·t<sub>${i + 1}</sub>`;
+                                decimalExpr += ` - ${coeff.negate().toNumber().toFixed(4)}·t<sub>${i + 1}</sub>`;
                             }
                         }
                     }
-                    html += `<div class="solution-item">x<sub>${varIdx + 1}</sub> = ${expr}</div>`;
+                    html += `<div class="solution-item">x<sub>${varIdx + 1}</sub> = ${expr}<br><small style="color: #666;">≈ ${decimalExpr}</small></div>`;
                 }
                 html += '<p><em>where t<sub>1</sub>, t<sub>2</sub>, ... are free parameters (any real numbers)</em></p>';
             }
@@ -894,39 +953,71 @@
                     return;
                 }
 
-                currentMatrix = matrix;
-                const rrefMatrix = rref(matrix);
-                const analysis = analyzeSolution(rrefMatrix);
+                const rows = matrix.length;
+                const cols = matrix[0].length;
 
-                let html = '<h2 style="color: #667eea; margin-bottom: 20px;">📊 Solution Results</h2>';
-
-                // Display final RREF
-                html += '<div class="step">';
-                html += '<div class="step-title">Final RREF Matrix [I | s]:</div>';
-                html += matrixToHTML(rrefMatrix, "RREF");
-                html += '</div>';
-
-                // Display solution
-                html += displaySolution(analysis, rrefMatrix);
-
-                // Toggle for step-by-step
-                html += '<div class="toggle-steps">';
-                html += '<button onclick="toggleSteps()">📋 Show/Hide Step-by-Step Solution</button>';
-                html += '</div>';
-
-                html += '<div id="stepsContainer" class="steps-container">';
-                html += '<h3 style="color: #667eea; margin: 20px 0;">Step-by-Step Process:</h3>';
-                for (let i = 0; i < steps.length; i++) {
-                    html += '<div class="step">';
-                    html += `<div class="step-title">Step ${i + 1}: ${steps[i].description}</div>`;
-                    html += matrixToHTML(steps[i].matrix, `Matrix after step ${i + 1}`);
-                    html += '</div>';
+                // Warning for very large matrices
+                if (rows > 50 || cols > 50) {
+                    const proceed = window.confirm(`Processing a ${rows}×${cols} matrix. This may take some time. Continue?`);
+                    if (!proceed) return;
                 }
-                html += '</div>';
 
-                document.getElementById('resultSection').innerHTML = html;
-                document.getElementById('resultSection').classList.add('active');
-                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+                // Show loading indicator for large matrices
+                if (rows > 20 || cols > 20) {
+                    document.getElementById('resultSection').innerHTML = '<div style="text-align: center; padding: 40px;"><h2>⏳ Computing RREF...</h2><p>Please wait, processing large matrix...</p></div>';
+                    document.getElementById('resultSection').classList.add('active');
+                }
+
+                // Use setTimeout to allow UI to update
+                setTimeout(() => {
+                    try {
+                        currentMatrix = matrix;
+                        const rrefMatrix = rref(matrix);
+                        const analysis = analyzeSolution(rrefMatrix);
+
+                        let html = '<h2 style="color: #667eea; margin-bottom: 20px;">📊 Solution Results</h2>';
+
+                        // Display final RREF
+                        html += '<div class="step">';
+                        html += '<div class="step-title">Final RREF Matrix [I | s]:</div>';
+                        html += matrixToHTML(rrefMatrix, "RREF", true);
+                        html += '</div>';
+
+                        // Display solution
+                        html += displaySolution(analysis, rrefMatrix);
+
+                        // Toggle for step-by-step
+                        html += '<div class="toggle-steps">';
+                        html += '<button onclick="toggleSteps()">📋 Show/Hide Step-by-Step Solution</button>';
+                        html += '</div>';
+
+                        html += '<div id="stepsContainer" class="steps-container">';
+                        html += '<h3 style="color: #667eea; margin: 20px 0;">Step-by-Step Process:</h3>';
+                        
+                        // For very large matrices, limit step display
+                        const maxStepsToShow = (rows > 20 || cols > 20) ? 100 : steps.length;
+                        if (steps.length > maxStepsToShow) {
+                            html += `<p style="color: #ff9800; background: #fff4e0; padding: 10px; border-radius: 5px;">
+                                ℹ️ Showing first ${maxStepsToShow} of ${steps.length} steps (matrix is large). Final result is complete.
+                            </p>`;
+                        }
+                        
+                        for (let i = 0; i < Math.min(steps.length, maxStepsToShow); i++) {
+                            html += '<div class="step">';
+                            html += `<div class="step-title">Step ${i + 1}: ${steps[i].description}</div>`;
+                            html += matrixToHTML(steps[i].matrix, `Matrix after step ${i + 1}`);
+                            html += '</div>';
+                        }
+                        html += '</div>';
+
+                        document.getElementById('resultSection').innerHTML = html;
+                        document.getElementById('resultSection').classList.add('active');
+                        document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+                    } catch (error) {
+                        alert('Error during computation: ' + error.message);
+                        console.error(error);
+                    }
+                }, 100);
 
             } catch (error) {
                 alert('Error: ' + error.message);
