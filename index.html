@@ -80,6 +80,12 @@
 
         .matrix-input {
             margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            overflow-x: auto;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
         }
 
         .matrix-row {
@@ -90,12 +96,12 @@
         }
 
         .matrix-row input {
-            width: 80px;
-            padding: 8px;
+            width: 70px;
+            padding: 6px;
             border: 2px solid #ddd;
             border-radius: 6px;
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .matrix-row input:focus {
@@ -311,16 +317,24 @@
             <div class="info-box">
                 <strong>How to use:</strong> Enter the number of equations and variables, then input your augmented matrix [A | b]. 
                 The calculator will transform it to RREF form and provide the solution!
+                <br><br>
+                <strong>✨ Advanced:</strong> You can use mathematical expressions including:
+                <ul style="margin: 10px 0 0 20px;">
+                    <li><strong>Trig functions:</strong> sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)</li>
+                    <li><strong>Operations:</strong> +, -, *, /, ^ (power), sqrt(x)</li>
+                    <li><strong>Constants:</strong> pi, e</li>
+                    <li><strong>Examples:</strong> cos(atan(2)), sin(pi/4), sqrt(2)/2, 3*cos(pi/6)</li>
+                </ul>
             </div>
 
             <div class="form-group">
                 <label>Number of Equations (rows):</label>
-                <input type="number" id="numRows" min="1" max="10" value="2">
+                <input type="number" id="numRows" min="1" max="50" value="2">
             </div>
 
             <div class="form-group">
                 <label>Number of Variables (columns):</label>
-                <input type="number" id="numCols" min="1" max="10" value="2">
+                <input type="number" id="numCols" min="1" max="50" value="2">
             </div>
 
             <button onclick="generateMatrix()">Generate Matrix Input</button>
@@ -419,13 +433,14 @@
             const rows = parseInt(document.getElementById('numRows').value);
             const cols = parseInt(document.getElementById('numCols').value);
 
-            if (rows < 1 || cols < 1 || rows > 10 || cols > 10) {
-                alert('Please enter valid dimensions (1-10 for both)');
+            if (rows < 1 || cols < 1 || rows > 50 || cols > 50) {
+                alert('Please enter valid dimensions (1-50 for both)');
                 return;
             }
 
             const container = document.getElementById('matrixInputContainer');
             let html = '<div class="matrix-input"><h3>Enter Augmented Matrix [A | b]:</h3>';
+            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Tip: For large matrices, you can use fractions (1/2), decimals (0.5), or integers</p>';
 
             for (let i = 0; i < rows; i++) {
                 html += '<div class="matrix-row">';
