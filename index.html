@@ -344,6 +344,7 @@
                 <button class="example-btn" onclick="loadExample(2)">Example 2: 3×3 Unique</button>
                 <button class="example-btn" onclick="loadExample(3)">Example 3: Infinite Solutions</button>
                 <button class="example-btn" onclick="loadExample(4)">Example 4: No Solution</button>
+                <button class="example-btn" onclick="loadExample(5)">Example 5: Trig Functions</button>
             </div>
 
             <div id="matrixInputContainer"></div>
@@ -429,6 +430,56 @@
         let currentMatrix = [];
         let steps = [];
 
+        // Mathematical expression evaluator
+        function evaluateExpression(expr) {
+            // Handle empty or just numbers
+            if (expr === '' || expr === '0') return 0;
+            
+            // If it's already a number, return it
+            const numVal = parseFloat(expr);
+            if (!isNaN(numVal) && isFinite(numVal) && expr.trim() === numVal.toString()) {
+                return numVal;
+            }
+            
+            // Make a copy to avoid modifying original
+            let processedExpr = expr.trim();
+            
+            // Replace constants (case insensitive)
+            processedExpr = processedExpr.replace(/\bpi\b/gi, '(Math.PI)');
+            processedExpr = processedExpr.replace(/\be\b/gi, '(Math.E)');
+            
+            // Replace trigonometric functions (case insensitive)
+            // Need to be careful with order to avoid double replacement
+            processedExpr = processedExpr.replace(/\barcsin\(/gi, 'Math.asin(');
+            processedExpr = processedExpr.replace(/\barccos\(/gi, 'Math.acos(');
+            processedExpr = processedExpr.replace(/\barctan\(/gi, 'Math.atan(');
+            processedExpr = processedExpr.replace(/\basin\(/gi, 'Math.asin(');
+            processedExpr = processedExpr.replace(/\bacos\(/gi, 'Math.acos(');
+            processedExpr = processedExpr.replace(/\batan\(/gi, 'Math.atan(');
+            processedExpr = processedExpr.replace(/\bsin\(/gi, 'Math.sin(');
+            processedExpr = processedExpr.replace(/\bcos\(/gi, 'Math.cos(');
+            processedExpr = processedExpr.replace(/\btan\(/gi, 'Math.tan(');
+            processedExpr = processedExpr.replace(/\bsqrt\(/gi, 'Math.sqrt(');
+            processedExpr = processedExpr.replace(/\babs\(/gi, 'Math.abs(');
+            processedExpr = processedExpr.replace(/\blog\(/gi, 'Math.log10(');
+            processedExpr = processedExpr.replace(/\bln\(/gi, 'Math.log(');
+            processedExpr = processedExpr.replace(/\bexp\(/gi, 'Math.exp(');
+            
+            // Replace power operator ^ with **
+            processedExpr = processedExpr.replace(/\^/g, '**');
+            
+            try {
+                // Evaluate the expression using Function constructor (safer than eval)
+                const result = Function('"use strict"; return (' + processedExpr + ')')();
+                if (isNaN(result) || !isFinite(result)) {
+                    throw new Error('Result is not a valid number');
+                }
+                return result;
+            } catch (e) {
+                throw new Error(`Cannot evaluate "${expr}": ${e.message}`);
+            }
+        }
+
         function generateMatrix() {
             const rows = parseInt(document.getElementById('numRows').value);
             const cols = parseInt(document.getElementById('numCols').value);
@@ -477,6 +528,14 @@
                     rows = 2; cols = 2;
                     values = [[1, 1, 1], [1, 1, 2]];
                     break;
+                case 5: // Trigonometric example
+                    rows = 3; cols = 3;
+                    values = [
+                        ['cos(atan(2))', 'sin(atan(2))', '0', 5],
+                        ['sin(pi/4)', 'cos(pi/4)', '1', 'sqrt(2)'],
+                        ['1', '0', 'cos(pi/3)', 2]
+                    ];
+                    break;
             }
 
             document.getElementById('numRows').value = rows;
@@ -503,12 +562,36 @@
                     const input = document.getElementById(`cell_${i}_${j}`);
                     if (!input) continue;
                     
-                    const value = input.value.trim();
-                    if (value.includes('/')) {
-                        const parts = value.split('/');
-                        row.push(new Fraction(parseFloat(parts[0]), parseFloat(parts[1])));
-                    } else {
-                        row.push(Fraction.fromDecimal(parseFloat(value) || 0));
+                    let value = input.value.trim();
+                    
+                    // Handle empty cells
+                    if (value === '') {
+                        value = '0';
+                    }
+                    
+                    try {
+                        // Check if it's a simple fraction (like 1/2) without any functions
+                        const hasFunctions = /sin|cos|tan|sqrt|pi|e|arcsin|arccos|arctan/i.test(value);
+                        
+                        if (value.includes('/') && !hasFunctions && !value.includes('(')) {
+                            // Simple fraction like "1/2" or "3/4"
+                            const parts = value.split('/');
+                            if (parts.length === 2) {
+                                const num = parseFloat(parts[0].trim());
+                                const den = parseFloat(parts[1].trim());
+                                if (!isNaN(num) && !isNaN(den) && den !== 0) {
+                                    row.push(new Fraction(Math.round(num * 1000000), Math.round(den * 1000000)));
+                                    continue;
+                                }
+                            }
+                        }
+                        
+                        // Otherwise evaluate as expression
+                        const evaluated = evaluateExpression(value);
+                        row.push(Fraction.fromDecimal(evaluated));
+                    } catch (e) {
+                        alert(`Error in cell [Row ${i+1}, Col ${j+1}]: ${e.message}\nYour input: "${value}"`);
+                        throw e;
                     }
                 }
                 matrix.push(row);
