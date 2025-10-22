@@ -104,9 +104,29 @@
             font-size: 13px;
         }
 
+        .matrix-row input:nth-of-type(even) {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
         .matrix-row input:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        .column-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+            margin-left: 50px;
+            align-items: center;
+        }
+
+        .column-header span {
+            width: 70px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9em;
         }
 
         .separator {
@@ -292,6 +312,54 @@
             color: #1976d2;
         }
 
+        .collapsible-section {
+            margin-bottom: 20px;
+        }
+
+        .collapsible-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .collapsible-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .collapsible-header::after {
+            content: '▼';
+            transition: transform 0.3s;
+        }
+
+        .collapsible-header.active::after {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible-content.expanded {
+            max-height: 1000px;
+        }
+
+        .collapsible-content-inner {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+            margin-top: 2px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -335,19 +403,26 @@
         </header>
 
         <div class="input-section">
-            <div class="info-box">
-                <strong>How to use:</strong> Enter the number of equations and variables, then input your augmented matrix [A | b]. 
-                The calculator will transform it to RREF form and provide the solution!
-                <br><br>
-                <strong>🚀 No Size Limits:</strong> This calculator supports unlimited dimensions! Solve 2×2, 10×10, 100×100, or even larger systems.
-                <br><br>
-                <strong>✨ Advanced:</strong> You can use mathematical expressions including:
-                <ul style="margin: 10px 0 0 20px;">
-                    <li><strong>Trig functions:</strong> sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)</li>
-                    <li><strong>Operations:</strong> +, -, *, /, ^ (power), sqrt(x)</li>
-                    <li><strong>Constants:</strong> pi, e</li>
-                    <li><strong>Examples:</strong> cos(atan(2)), sin(pi/4), sqrt(2)/2, 3*cos(pi/6)</li>
-                </ul>
+            <div class="collapsible-section">
+                <div class="collapsible-header" onclick="toggleCollapsible('howToUse')">
+                    📖 How to Use This Calculator
+                </div>
+                <div id="howToUse" class="collapsible-content">
+                    <div class="collapsible-content-inner">
+                        <strong>Basic Usage:</strong> Enter the number of equations and variables, then input your augmented matrix [A | b]. 
+                        The calculator will transform it to RREF form and provide the solution!
+                        <br><br>
+                        <strong>🚀 No Size Limits:</strong> This calculator supports unlimited dimensions! Solve 2×2, 10×10, 100×100, or even larger systems.
+                        <br><br>
+                        <strong>✨ Advanced Features:</strong> You can use mathematical expressions including:
+                        <ul style="margin: 10px 0 0 20px;">
+                            <li><strong>Trig functions:</strong> sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)</li>
+                            <li><strong>Operations:</strong> +, -, *, /, ^ (power), sqrt(x)</li>
+                            <li><strong>Constants:</strong> pi, e</li>
+                            <li><strong>Examples:</strong> cos(atan(2)), sin(pi/4), sqrt(2)/2, 3*cos(pi/6)</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -362,12 +437,21 @@
 
             <button onclick="generateMatrix()">Generate Matrix Input</button>
 
-            <div class="example-buttons">
-                <button class="example-btn" onclick="loadExample(1)">Example 1: 2×2 Unique</button>
-                <button class="example-btn" onclick="loadExample(2)">Example 2: 3×3 Unique</button>
-                <button class="example-btn" onclick="loadExample(3)">Example 3: Infinite Solutions</button>
-                <button class="example-btn" onclick="loadExample(4)">Example 4: No Solution</button>
-                <button class="example-btn" onclick="loadExample(5)">Example 5: Trig Functions</button>
+            <div class="collapsible-section" style="margin-top: 15px;">
+                <div class="collapsible-header" onclick="toggleCollapsible('examples')">
+                    💡 Load Example Problems
+                </div>
+                <div id="examples" class="collapsible-content">
+                    <div class="collapsible-content-inner">
+                        <div class="example-buttons">
+                            <button class="example-btn" onclick="loadExample(1)">Example 1: 2×2 Unique</button>
+                            <button class="example-btn" onclick="loadExample(2)">Example 2: 3×3 Unique</button>
+                            <button class="example-btn" onclick="loadExample(3)">Example 3: Infinite Solutions</button>
+                            <button class="example-btn" onclick="loadExample(4)">Example 4: No Solution</button>
+                            <button class="example-btn" onclick="loadExample(5)">Example 5: Trig Functions</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="matrixInputContainer"></div>
@@ -521,6 +605,16 @@
             let html = '<div class="matrix-input"><h3>Enter Augmented Matrix [A | b]:</h3>';
             html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Tip: For large matrices, you can use fractions (1/2), decimals (0.5), or mathematical expressions</p>';
 
+            // Add column headers
+            html += '<div class="column-header">';
+            for (let j = 0; j < cols; j++) {
+                html += `<span>x${j + 1}</span>`;
+            }
+            html += '<span style="color: #999; width: 20px;">|</span>';
+            html += '<span>b</span>';
+            html += '</div>';
+
+            // Add matrix rows with alternating colors
             for (let i = 0; i < rows; i++) {
                 html += '<div class="matrix-row">';
                 html += `<span style="min-width: 30px; color: #667eea; font-weight: 600;">R${i+1}</span>`;
@@ -979,7 +1073,7 @@
 
                         // Display final RREF
                         html += '<div class="step">';
-                        html += '<div class="step-title">Final RREF Matrix [I | s]:</div>';
+                        html += '<div class="step-title">Final RREF Matrix:</div>';
                         html += matrixToHTML(rrefMatrix, "RREF", true);
                         html += '</div>';
 
@@ -1023,6 +1117,14 @@
                 alert('Error: ' + error.message);
                 console.error(error);
             }
+        }
+
+        function toggleCollapsible(id) {
+            const content = document.getElementById(id);
+            const header = content.previousElementSibling;
+            
+            content.classList.toggle('expanded');
+            header.classList.toggle('active');
         }
 
         function toggleSteps() {
