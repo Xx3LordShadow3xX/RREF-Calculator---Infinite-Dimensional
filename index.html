@@ -46,11 +46,56 @@
             font-size: 1.1em;
         }
 
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .mode-btn {
+            background: #f0f0f0;
+            color: #666;
+            border: 2px solid #ddd;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: #e0e0e0;
+            border-color: #999;
+        }
+
         .input-section {
             background: #f8f9fa;
             padding: 30px;
             border-radius: 15px;
             margin-bottom: 30px;
+        }
+
+        .mode-content {
+            display: none;
+        }
+
+        .mode-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .form-group {
@@ -73,9 +118,44 @@
             transition: border-color 0.3s;
         }
 
-        input[type="number"]:focus {
+        input[type="text"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+
+        input:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        .equation-input-container {
+            margin-top: 20px;
+        }
+
+        .equation-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .equation-row label {
+            min-width: 30px;
+            margin: 0;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .equation-row input {
+            flex: 1;
+            min-width: 200px;
         }
 
         .matrix-input {
@@ -106,11 +186,6 @@
 
         .matrix-row input:nth-of-type(even) {
             background: rgba(102, 126, 234, 0.05);
-        }
-
-        .matrix-row input:focus {
-            outline: none;
-            border-color: #667eea;
         }
 
         .column-header {
@@ -379,6 +454,10 @@
                 padding: 12px 30px;
                 font-size: 14px;
             }
+
+            .mode-selector {
+                flex-direction: column;
+            }
         }
 
         .example-buttons {
@@ -402,59 +481,111 @@
             <p class="subtitle">Solve Systems of Linear Equations Using Reduced Row Echelon Form</p>
         </header>
 
+        <div class="mode-selector">
+            <button class="mode-btn active" onclick="switchMode('matrix')">
+                📊 Mode 1: Manual Matrix Input
+            </button>
+            <button class="mode-btn" onclick="switchMode('equation')">
+                ✏️ Mode 2: Equation Input
+            </button>
+        </div>
+
         <div class="input-section">
-            <div class="collapsible-section">
-                <div class="collapsible-header" onclick="toggleCollapsible('howToUse')">
-                    📖 How to Use This Calculator
-                </div>
-                <div id="howToUse" class="collapsible-content">
-                    <div class="collapsible-content-inner">
-                        <strong>Basic Usage:</strong> Enter the number of equations and variables, then input your augmented matrix [A | b]. 
-                        The calculator will transform it to RREF form and provide the solution!
-                        <br><br>
-                        <strong>🚀 No Size Limits:</strong> This calculator supports unlimited dimensions! Solve 2×2, 10×10, 100×100, or even larger systems.
-                        <br><br>
-                        <strong>✨ Advanced Features:</strong> You can use mathematical expressions including:
-                        <ul style="margin: 10px 0 0 20px;">
-                            <li><strong>Trig functions:</strong> sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)</li>
-                            <li><strong>Operations:</strong> +, -, *, /, ^ (power), sqrt(x)</li>
-                            <li><strong>Constants:</strong> pi, e</li>
-                            <li><strong>Examples:</strong> cos(atan(2)), sin(pi/4), sqrt(2)/2, 3*cos(pi/6)</li>
-                        </ul>
+            <!-- MODE 1: Matrix Input -->
+            <div id="matrixMode" class="mode-content active">
+                <div class="collapsible-section">
+                    <div class="collapsible-header" onclick="toggleCollapsible('howToUse')">
+                        📖 How to Use This Calculator
                     </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Number of Equations (rows):</label>
-                <input type="number" id="numRows" min="1" value="2">
-            </div>
-
-            <div class="form-group">
-                <label>Number of Variables (columns):</label>
-                <input type="number" id="numCols" min="1" value="2">
-            </div>
-
-            <button onclick="generateMatrix()">Generate Matrix Input</button>
-
-            <div class="collapsible-section" style="margin-top: 15px;">
-                <div class="collapsible-header" onclick="toggleCollapsible('examples')">
-                    💡 Load Example Problems
-                </div>
-                <div id="examples" class="collapsible-content">
-                    <div class="collapsible-content-inner">
-                        <div class="example-buttons">
-                            <button class="example-btn" onclick="loadExample(1)">Example 1: 2×2 Unique</button>
-                            <button class="example-btn" onclick="loadExample(2)">Example 2: 3×3 Unique</button>
-                            <button class="example-btn" onclick="loadExample(3)">Example 3: Infinite Solutions</button>
-                            <button class="example-btn" onclick="loadExample(4)">Example 4: No Solution</button>
-                            <button class="example-btn" onclick="loadExample(5)">Example 5: Trig Functions</button>
+                    <div id="howToUse" class="collapsible-content">
+                        <div class="collapsible-content-inner">
+                            <strong>Basic Usage:</strong> Enter the number of equations and variables, then input your augmented matrix [A | b]. 
+                            The calculator will transform it to RREF form and provide the solution!
+                            <br><br>
+                            <strong>🚀 No Size Limits:</strong> This calculator supports unlimited dimensions! Solve 2×2, 10×10, 100×100, or even larger systems.
+                            <br><br>
+                            <strong>✨ Advanced Features:</strong> You can use mathematical expressions including:
+                            <ul style="margin: 10px 0 0 20px;">
+                                <li><strong>Trig functions:</strong> sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)</li>
+                                <li><strong>Operations:</strong> +, -, *, /, ^ (power), sqrt(x)</li>
+                                <li><strong>Constants:</strong> pi, e</li>
+                                <li><strong>Examples:</strong> cos(atan(2)), sin(pi/4), sqrt(2)/2, 3*cos(pi/6)</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label>Number of Equations (rows):</label>
+                    <input type="number" id="numRows" min="1" value="2">
+                </div>
+
+                <div class="form-group">
+                    <label>Number of Variables (columns):</label>
+                    <input type="number" id="numCols" min="1" value="2">
+                </div>
+
+                <button onclick="generateMatrix()">Generate Matrix Input</button>
+
+                <div class="collapsible-section" style="margin-top: 15px;">
+                    <div class="collapsible-header" onclick="toggleCollapsible('examples')">
+                        💡 Load Example Problems
+                    </div>
+                    <div id="examples" class="collapsible-content">
+                        <div class="collapsible-content-inner">
+                            <div class="example-buttons">
+                                <button class="example-btn" onclick="loadExample(1)">Example 1: 2×2 Unique</button>
+                                <button class="example-btn" onclick="loadExample(2)">Example 2: 3×3 Unique</button>
+                                <button class="example-btn" onclick="loadExample(3)">Example 3: Infinite Solutions</button>
+                                <button class="example-btn" onclick="loadExample(4)">Example 4: No Solution</button>
+                                <button class="example-btn" onclick="loadExample(5)">Example 5: Trig Functions</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="matrixInputContainer"></div>
             </div>
 
-            <div id="matrixInputContainer"></div>
+            <!-- MODE 2: Equation Input -->
+            <div id="equationMode" class="mode-content">
+                <div class="info-box">
+                    <strong>📝 Equation Input Mode</strong><br>
+                    Enter your system of linear equations in algebraic form. Use variables x₁, x₂, x₃, ... (type as x1, x2, x3, ...)<br>
+                    <br>
+                    <strong>Examples:</strong><br>
+                    • <code>2x1 + 3x2 = 7</code><br>
+                    • <code>x1 - 3x2 + 6x5 = cos(pi)</code><br>
+                    • <code>sqrt(2)*x1 + x2 - x3 = 5</code><br>
+                    <br>
+                    <strong>Supported:</strong> All mathematical expressions (sin, cos, sqrt, pi, e, etc.), fractions, decimals
+                </div>
+
+                <div class="form-group">
+                    <label>Number of Equations:</label>
+                    <input type="number" id="numEquations" min="1" value="2" onchange="generateEquationInputs()">
+                </div>
+
+                <button onclick="generateEquationInputs()">Generate Equation Inputs</button>
+
+                <div class="collapsible-section" style="margin-top: 15px;">
+                    <div class="collapsible-header" onclick="toggleCollapsible('eqExamples')">
+                        💡 Load Equation Examples
+                    </div>
+                    <div id="eqExamples" class="collapsible-content">
+                        <div class="collapsible-content-inner">
+                            <div class="example-buttons">
+                                <button class="example-btn" onclick="loadEquationExample(1)">Ex 1: Simple 2×2</button>
+                                <button class="example-btn" onclick="loadEquationExample(2)">Ex 2: 3×3 System</button>
+                                <button class="example-btn" onclick="loadEquationExample(3)">Ex 3: With Expressions</button>
+                                <button class="example-btn" onclick="loadEquationExample(4)">Ex 4: Large System</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="equationInputContainer" class="equation-input-container"></div>
+            </div>
 
             <div style="margin-top: 20px;">
                 <button onclick="solveSystem()">🚀 Solve System</button>
@@ -466,6 +597,34 @@
     </div>
 
     <script>
+        let currentMode = 'matrix';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Update button states
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update content visibility
+            document.querySelectorAll('.mode-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            if (mode === 'matrix') {
+                document.getElementById('matrixMode').classList.add('active');
+            } else {
+                document.getElementById('equationMode').classList.add('active');
+            }
+            
+            // Clear results when switching modes
+            document.getElementById('resultSection').classList.remove('active');
+        }
+
+        // ===== EXISTING MATRIX MODE CODE (UNCHANGED) =====
+        
         class Fraction {
             constructor(numerator, denominator = 1) {
                 if (denominator === 0) throw new Error("Denominator cannot be zero");
@@ -537,26 +696,19 @@
         let currentMatrix = [];
         let steps = [];
 
-        // Mathematical expression evaluator
         function evaluateExpression(expr) {
-            // Handle empty or just numbers
             if (expr === '' || expr === '0') return 0;
             
-            // If it's already a number, return it
             const numVal = parseFloat(expr);
             if (!isNaN(numVal) && isFinite(numVal) && expr.trim() === numVal.toString()) {
                 return numVal;
             }
             
-            // Make a copy to avoid modifying original
             let processedExpr = expr.trim();
             
-            // Replace constants (case insensitive)
             processedExpr = processedExpr.replace(/\bpi\b/gi, '(Math.PI)');
             processedExpr = processedExpr.replace(/\be\b/gi, '(Math.E)');
             
-            // Replace trigonometric functions (case insensitive)
-            // Need to be careful with order to avoid double replacement
             processedExpr = processedExpr.replace(/\barcsin\(/gi, 'Math.asin(');
             processedExpr = processedExpr.replace(/\barccos\(/gi, 'Math.acos(');
             processedExpr = processedExpr.replace(/\barctan\(/gi, 'Math.atan(');
@@ -572,11 +724,9 @@
             processedExpr = processedExpr.replace(/\bln\(/gi, 'Math.log(');
             processedExpr = processedExpr.replace(/\bexp\(/gi, 'Math.exp(');
             
-            // Replace power operator ^ with **
             processedExpr = processedExpr.replace(/\^/g, '**');
             
             try {
-                // Evaluate the expression using Function constructor (safer than eval)
                 const result = Function('"use strict"; return (' + processedExpr + ')')();
                 if (isNaN(result) || !isFinite(result)) {
                     throw new Error('Result is not a valid number');
@@ -605,7 +755,6 @@
             let html = '<div class="matrix-input"><h3>Enter Augmented Matrix [A | b]:</h3>';
             html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Tip: For large matrices, you can use fractions (1/2), decimals (0.5), or mathematical expressions</p>';
 
-            // Add column headers
             html += '<div class="column-header">';
             for (let j = 0; j < cols; j++) {
                 html += `<span>x${j + 1}</span>`;
@@ -614,7 +763,6 @@
             html += '<span>b</span>';
             html += '</div>';
 
-            // Add matrix rows with alternating colors
             for (let i = 0; i < rows; i++) {
                 html += '<div class="matrix-row">';
                 html += `<span style="min-width: 30px; color: #667eea; font-weight: 600;">R${i+1}</span>`;
@@ -635,23 +783,23 @@
             let rows, cols, values;
 
             switch(exampleNum) {
-                case 1: // 2×2 unique solution
+                case 1:
                     rows = 2; cols = 2;
                     values = [[1, 1, 3], [2, -1, 0]];
                     break;
-                case 2: // 3×3 unique solution
+                case 2:
                     rows = 3; cols = 3;
                     values = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]];
                     break;
-                case 3: // Infinite solutions
+                case 3:
                     rows = 2; cols = 3;
                     values = [[1, 2, -1, 3], [2, 4, -2, 6]];
                     break;
-                case 4: // No solution
+                case 4:
                     rows = 2; cols = 2;
                     values = [[1, 1, 1], [1, 1, 2]];
                     break;
-                case 5: // Trigonometric example
+                case 5:
                     rows = 3; cols = 3;
                     values = [
                         ['cos(atan(2))', 'sin(atan(2))', '0', 5],
@@ -687,17 +835,14 @@
                     
                     let value = input.value.trim();
                     
-                    // Handle empty cells
                     if (value === '') {
                         value = '0';
                     }
                     
                     try {
-                        // Check if it's a simple fraction (like 1/2) without any functions
                         const hasFunctions = /sin|cos|tan|sqrt|pi|e|arcsin|arccos|arctan/i.test(value);
                         
                         if (value.includes('/') && !hasFunctions && !value.includes('(')) {
-                            // Simple fraction like "1/2" or "3/4"
                             const parts = value.split('/');
                             if (parts.length === 2) {
                                 const num = parseFloat(parts[0].trim());
@@ -709,7 +854,6 @@
                             }
                         }
                         
-                        // Otherwise evaluate as expression
                         const evaluated = evaluateExpression(value);
                         row.push(Fraction.fromDecimal(evaluated));
                     } catch (e) {
@@ -723,6 +867,285 @@
             return matrix;
         }
 
+        // ===== NEW MODE 2: EQUATION PARSER =====
+
+        function generateEquationInputs() {
+            const numEq = parseInt(document.getElementById('numEquations').value);
+            
+            if (numEq < 1) {
+                alert('Please enter a valid number of equations');
+                return;
+            }
+
+            if (numEq > 50) {
+                const confirm = window.confirm(`You're about to create ${numEq} equation inputs. Continue?`);
+                if (!confirm) return;
+            }
+
+            const container = document.getElementById('equationInputContainer');
+            let html = '<div style="margin-top: 20px;"><h3>Enter Your Equations:</h3>';
+            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Use variables x1, x2, x3, ... and standard operators. Example: 2x1 - 3x2 + 5 = 7</p>';
+
+            for (let i = 0; i < numEq; i++) {
+                html += '<div class="equation-row">';
+                html += `<label>E${i+1}:</label>`;
+                html += `<input type="text" id="eq_${i}" placeholder="e.g., 2x1 + 3x2 = 5">`;
+                html += '</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function loadEquationExample(exNum) {
+            let equations = [];
+            
+            switch(exNum) {
+                case 1: // Simple 2x2
+                    equations = [
+                        'x1 + x2 = 3',
+                        '2x1 - x2 = 0'
+                    ];
+                    break;
+                case 2: // 3x3
+                    equations = [
+                        '2x1 + x2 - x3 = 8',
+                        '-3x1 - x2 + 2x3 = -11',
+                        '-2x1 + x2 + 2x3 = -3'
+                    ];
+                    break;
+                case 3: // With expressions
+                    equations = [
+                        'sqrt(2)*x1 + x2 = 5',
+                        'cos(pi/3)*x1 + sin(pi/6)*x2 = 2',
+                        'x1 - x2 = 1'
+                    ];
+                    break;
+                case 4: // Large system
+                    equations = [
+                        'x1 + 2x2 - x3 + x4 = 10',
+                        '2x1 - x2 + 3x3 - 2x4 = 5',
+                        'x1 + x2 + x3 + x4 = 8',
+                        '3x1 - x2 + 2x3 + x4 = 12'
+                    ];
+                    break;
+            }
+
+            document.getElementById('numEquations').value = equations.length;
+            generateEquationInputs();
+
+            setTimeout(() => {
+                equations.forEach((eq, i) => {
+                    document.getElementById(`eq_${i}`).value = eq;
+                });
+            }, 100);
+        }
+
+        function parseEquation(equation) {
+            // Remove all whitespace for easier parsing
+            equation = equation.replace(/\s+/g, '');
+            
+            // Check if equation has exactly one '='
+            const parts = equation.split('=');
+            if (parts.length !== 2) {
+                throw new Error('Equation must have exactly one "=" sign');
+            }
+
+            let leftSide = parts[0];
+            let rightSide = parts[1];
+
+            // Parse both sides to extract coefficients
+            const leftCoeffs = parseExpression(leftSide);
+            const rightCoeffs = parseExpression(rightSide);
+
+            // Move everything to left side (left - right = 0)
+            const allVars = new Set([...Object.keys(leftCoeffs), ...Object.keys(rightCoeffs)]);
+            const finalCoeffs = {};
+
+            for (let varName of allVars) {
+                const leftVal = leftCoeffs[varName] || 0;
+                const rightVal = rightCoeffs[varName] || 0;
+                finalCoeffs[varName] = leftVal - rightVal;
+            }
+
+            return finalCoeffs;
+        }
+
+        function parseExpression(expr) {
+            const coeffs = {};
+            
+            // Handle empty expression
+            if (expr === '') {
+                coeffs['constant'] = 0;
+                return coeffs;
+            }
+
+            // Add leading '+' if expression doesn't start with sign
+            if (expr[0] !== '+' && expr[0] !== '-') {
+                expr = '+' + expr;
+            }
+
+            // Split by + and - while keeping the signs
+            const terms = [];
+            let currentTerm = '';
+            
+            for (let i = 0; i < expr.length; i++) {
+                if ((expr[i] === '+' || expr[i] === '-') && i > 0) {
+                    // Check if this is part of a function or expression
+                    let inParens = 0;
+                    for (let j = 0; j < i; j++) {
+                        if (expr[j] === '(') inParens++;
+                        if (expr[j] === ')') inParens--;
+                    }
+                    
+                    if (inParens === 0) {
+                        terms.push(currentTerm);
+                        currentTerm = expr[i];
+                    } else {
+                        currentTerm += expr[i];
+                    }
+                } else {
+                    currentTerm += expr[i];
+                }
+            }
+            terms.push(currentTerm);
+
+            // Process each term
+            for (let term of terms) {
+                term = term.trim();
+                if (term === '' || term === '+' || term === '-') continue;
+
+                // Extract sign
+                let sign = 1;
+                if (term[0] === '-') {
+                    sign = -1;
+                    term = term.substring(1);
+                } else if (term[0] === '+') {
+                    term = term.substring(1);
+                }
+
+                // Check if term contains variable (x followed by digits)
+                const varMatch = term.match(/x(\d+)/);
+                
+                if (varMatch) {
+                    // This term has a variable
+                    const varIndex = parseInt(varMatch[1]);
+                    const varName = `x${varIndex}`;
+                    
+                    // Extract coefficient (everything before x)
+                    const coeffPart = term.substring(0, term.indexOf('x'));
+                    
+                    let coeff;
+                    if (coeffPart === '' || coeffPart === '+') {
+                        coeff = 1;
+                    } else if (coeffPart === '-') {
+                        coeff = -1;
+                    } else {
+                        // Evaluate the coefficient expression
+                        try {
+                            coeff = evaluateExpression(coeffPart);
+                        } catch (e) {
+                            throw new Error(`Cannot parse coefficient "${coeffPart}" in term "${sign > 0 ? '+' : '-'}${term}"`);
+                        }
+                    }
+
+                    coeff *= sign;
+
+                    // Add to coefficients
+                    if (coeffs[varName]) {
+                        coeffs[varName] += coeff;
+                    } else {
+                        coeffs[varName] = coeff;
+                    }
+                } else {
+                    // This is a constant term
+                    try {
+                        const value = evaluateExpression(term) * sign;
+                        if (coeffs['constant']) {
+                            coeffs['constant'] += value;
+                        } else {
+                            coeffs['constant'] = value;
+                        }
+                    } catch (e) {
+                        throw new Error(`Cannot parse term "${sign > 0 ? '+' : '-'}${term}"`);
+                    }
+                }
+            }
+
+            return coeffs;
+        }
+
+        function equationsToMatrix() {
+            const numEq = parseInt(document.getElementById('numEquations').value);
+            const equations = [];
+            
+            // Parse all equations
+            for (let i = 0; i < numEq; i++) {
+                const input = document.getElementById(`eq_${i}`);
+                if (!input) continue;
+                
+                const eqText = input.value.trim();
+                if (eqText === '') {
+                    throw new Error(`Equation ${i+1} is empty`);
+                }
+                
+                try {
+                    const coeffs = parseEquation(eqText);
+                    equations.push(coeffs);
+                } catch (e) {
+                    throw new Error(`Error in Equation ${i+1}: ${e.message}\nYour input: "${eqText}"`);
+                }
+            }
+
+            // Find all unique variables
+            const allVars = new Set();
+            for (let eq of equations) {
+                for (let key of Object.keys(eq)) {
+                    if (key !== 'constant') {
+                        allVars.add(key);
+                    }
+                }
+            }
+
+            // Sort variables by index (x1, x2, x3, ...)
+            const sortedVars = Array.from(allVars).sort((a, b) => {
+                const numA = parseInt(a.substring(1));
+                const numB = parseInt(b.substring(1));
+                return numA - numB;
+            });
+
+            // Check for gaps in variable numbering
+            for (let i = 0; i < sortedVars.length; i++) {
+                const expectedIndex = i + 1;
+                const actualIndex = parseInt(sortedVars[i].substring(1));
+                if (actualIndex !== expectedIndex) {
+                    console.warn(`Warning: Variables not consecutive. Found x${actualIndex}, expected x${expectedIndex}`);
+                }
+            }
+
+            // Build augmented matrix
+            const matrix = [];
+            for (let eq of equations) {
+                const row = [];
+                
+                // Add coefficients for each variable
+                for (let varName of sortedVars) {
+                    const coeff = eq[varName] || 0;
+                    row.push(Fraction.fromDecimal(coeff));
+                }
+                
+                // Add constant term (negated because we moved it to the right side)
+                const constant = -(eq['constant'] || 0);
+                row.push(Fraction.fromDecimal(constant));
+                
+                matrix.push(row);
+            }
+
+            return { matrix, variables: sortedVars };
+        }
+
+        // ===== SHARED SOLVER CODE (UNCHANGED) =====
+
         function matrixToHTML(matrix, title = "Matrix", showDecimals = false) {
             const rows = matrix.length;
             const cols = matrix[0].length;
@@ -730,8 +1153,7 @@
             let html = `<div class="matrix-display">`;
             html += `<strong>${title} [${rows}×${cols}]:</strong><table>`;
             
-            // Header row with column numbers
-            html += '<tr><th></th>'; // Empty corner cell
+            html += '<tr><th></th>';
             for (let j = 0; j < cols; j++) {
                 if (j === cols - 1) {
                     html += '<th style="border-left: 3px solid #667eea;">b</th>';
@@ -743,7 +1165,6 @@
 
             for (let i = 0; i < rows; i++) {
                 html += '<tr>';
-                // Row label
                 html += `<th>R${i + 1}</th>`;
                 
                 for (let j = 0; j < cols; j++) {
@@ -753,7 +1174,6 @@
                     
                     if (showDecimals) {
                         const decimal = value.toNumber();
-                        // Show fraction and decimal
                         displayValue = `${value.toString()}<br><small style="color: #666;">(${decimal.toFixed(4)})</small>`;
                     } else {
                         displayValue = value.toString();
@@ -810,7 +1230,6 @@
 
             let currentRow = 0;
 
-            // Forward elimination
             for (let col = 0; col < cols - 1; col++) {
                 if (currentRow >= rows) break;
 
@@ -856,7 +1275,6 @@
                 currentRow++;
             }
 
-            // Back substitution
             for (let col = cols - 2; col >= 0; col--) {
                 let pivotRow = null;
                 for (let i = 0; i < rows; i++) {
@@ -924,7 +1342,6 @@
                 }
             }
 
-            // Check for inconsistency
             for (let i = 0; i < rows; i++) {
                 let allZero = true;
                 for (let j = 0; j < nVars; j++) {
@@ -1041,28 +1458,45 @@
 
         function solveSystem() {
             try {
-                const matrix = getMatrixFromInput();
-                if (matrix.length === 0) {
-                    alert('Please generate a matrix first!');
-                    return;
+                let matrix;
+                let parsedInfo = '';
+
+                if (currentMode === 'matrix') {
+                    matrix = getMatrixFromInput();
+                    if (matrix.length === 0) {
+                        alert('Please generate a matrix first!');
+                        return;
+                    }
+                } else {
+                    // Mode 2: Parse equations
+                    const result = equationsToMatrix();
+                    matrix = result.matrix;
+                    
+                    if (matrix.length === 0) {
+                        alert('Please enter some equations first!');
+                        return;
+                    }
+
+                    parsedInfo = `<div class="info-box" style="background: #e8f5e9; border-color: #4caf50;">
+                        <strong>✅ Equations Parsed Successfully</strong><br>
+                        Found ${result.variables.length} variables: ${result.variables.map((v, i) => `x<sub>${i+1}</sub>`).join(', ')}<br>
+                        Generated ${matrix.length}×${matrix[0].length} augmented matrix [A | b]
+                    </div>`;
                 }
 
                 const rows = matrix.length;
                 const cols = matrix[0].length;
 
-                // Warning for very large matrices
                 if (rows > 50 || cols > 50) {
                     const proceed = window.confirm(`Processing a ${rows}×${cols} matrix. This may take some time. Continue?`);
                     if (!proceed) return;
                 }
 
-                // Show loading indicator for large matrices
                 if (rows > 20 || cols > 20) {
                     document.getElementById('resultSection').innerHTML = '<div style="text-align: center; padding: 40px;"><h2>⏳ Computing RREF...</h2><p>Please wait, processing large matrix...</p></div>';
                     document.getElementById('resultSection').classList.add('active');
                 }
 
-                // Use setTimeout to allow UI to update
                 setTimeout(() => {
                     try {
                         currentMatrix = matrix;
@@ -1071,16 +1505,17 @@
 
                         let html = '<h2 style="color: #667eea; margin-bottom: 20px;">📊 Solution Results</h2>';
 
-                        // Display final RREF
+                        if (parsedInfo) {
+                            html += parsedInfo;
+                        }
+
                         html += '<div class="step">';
                         html += '<div class="step-title">Final RREF Matrix:</div>';
                         html += matrixToHTML(rrefMatrix, "RREF", true);
                         html += '</div>';
 
-                        // Display solution
                         html += displaySolution(analysis, rrefMatrix);
 
-                        // Toggle for step-by-step
                         html += '<div class="toggle-steps">';
                         html += '<button onclick="toggleSteps()">📋 Show/Hide Step-by-Step Solution</button>';
                         html += '</div>';
@@ -1088,7 +1523,6 @@
                         html += '<div id="stepsContainer" class="steps-container">';
                         html += '<h3 style="color: #667eea; margin: 20px 0;">Step-by-Step Process:</h3>';
                         
-                        // For very large matrices, limit step display
                         const maxStepsToShow = (rows > 20 || cols > 20) ? 100 : steps.length;
                         if (steps.length > maxStepsToShow) {
                             html += `<p style="color: #ff9800; background: #fff4e0; padding: 10px; border-radius: 5px;">
@@ -1134,13 +1568,14 @@
 
         function clearAll() {
             document.getElementById('matrixInputContainer').innerHTML = '';
+            document.getElementById('equationInputContainer').innerHTML = '';
             document.getElementById('resultSection').innerHTML = '';
             document.getElementById('resultSection').classList.remove('active');
             document.getElementById('numRows').value = 2;
             document.getElementById('numCols').value = 2;
+            document.getElementById('numEquations').value = 2;
         }
 
-        // Initialize with a 2×2 matrix
         window.onload = function() {
             generateMatrix();
         };
