@@ -158,6 +158,12 @@
             min-width: 200px;
         }
 
+        .equation-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
         .matrix-input {
             margin-top: 20px;
             max-height: 600px;
@@ -235,6 +241,11 @@
 
         .secondary-btn {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .small-btn {
+            padding: 8px 20px;
+            font-size: 14px;
         }
 
         .result-section {
@@ -517,15 +528,15 @@
 
                 <div class="form-group">
                     <label>Number of Equations (rows):</label>
-                    <input type="number" id="numRows" min="1" value="2">
+                    <input type="number" id="numRows" min="1" value="2" onchange="updateMatrixSize()">
                 </div>
 
                 <div class="form-group">
                     <label>Number of Variables (columns):</label>
-                    <input type="number" id="numCols" min="1" value="2">
+                    <input type="number" id="numCols" min="1" value="2" onchange="updateMatrixSize()">
                 </div>
 
-                <button onclick="generateMatrix()">Generate Matrix Input</button>
+                <button onclick="updateMatrixSize()">Update Matrix Size</button>
 
                 <div class="collapsible-section" style="margin-top: 15px;">
                     <div class="collapsible-header" onclick="toggleCollapsible('examples')">
@@ -563,10 +574,10 @@
 
                 <div class="form-group">
                     <label>Number of Equations:</label>
-                    <input type="number" id="numEquations" min="1" value="2" onchange="generateEquationInputs()">
+                    <input type="number" id="numEquations" min="1" value="2" onchange="updateEquationCount()">
                 </div>
 
-                <button onclick="generateEquationInputs()">Generate Equation Inputs</button>
+                <button onclick="updateEquationCount()">Update Number of Equations</button>
 
                 <div class="collapsible-section" style="margin-top: 15px;">
                     <div class="collapsible-header" onclick="toggleCollapsible('eqExamples')">
@@ -598,8 +609,26 @@
 
     <script>
         let currentMode = 'matrix';
+        
+        // State storage for both modes (in-memory arrays preserving all data)
+        let matrixState = {
+            values: [], // 2D array of strings
+            maxRows: 2,
+            maxCols: 2
+        };
+        
+        let equationState = {
+            equations: ['', ''] // array of equation strings
+        };
 
         function switchMode(mode) {
+            // Save current mode's data before switching
+            if (currentMode === 'matrix') {
+                saveMatrixState();
+            } else {
+                saveEquationState();
+            }
+            
             currentMode = mode;
             
             // Update button states
@@ -618,12 +647,192 @@
             } else {
                 document.getElementById('equationMode').classList.add('active');
             }
-            
-            // Clear results when switching modes
-            document.getElementById('resultSection').classList.remove('active');
         }
 
-        // ===== EXISTING MATRIX MODE CODE (UNCHANGED) =====
+        // ===== MATRIX STATE MANAGEMENT =====
+        
+        function saveMatrixState() {
+            const rows = parseInt(document.getElementById('numRows').value);
+            const cols = parseInt(document.getElementById('numCols').value);
+            
+            // Expand state array if needed
+            while (matrixState.values.length < matrixState.maxRows) {
+                matrixState.values.push([]);
+            }
+            
+            // Save current values from DOM
+            for (let i = 0; i < matrixState.maxRows; i++) {
+                while (matrixState.values[i].length < matrixState.maxCols + 1) {
+                    matrixState.values[i].push('0');
+                }
+                for (let j = 0; j < matrixState.maxCols + 1; j++) {
+                    const input = document.getElementById(`cell_${i}_${j}`);
+                    if (input) {
+                        matrixState.values[i][j] = input.value;
+                    }
+                }
+            }
+        }
+        
+        function updateMatrixSize() {
+            const newRows = parseInt(document.getElementById('numRows').value);
+            const newCols = parseInt(document.getElementById('numCols').value);
+
+            if (newRows < 1 || newCols < 1) {
+                alert('Please enter valid dimensions (positive integers)');
+                return;
+            }
+
+            if (newRows > 100 || newCols > 100) {
+                const proceed = window.confirm ? window.confirm(`You're about to create a ${newRows}×${newCols+1} matrix. This is quite large. Continue?`) : true;
+                if (!proceed) return;
+            }
+
+            // Save current state before resizing
+            saveMatrixState();
+            
+            const oldRows = matrixState.maxRows;
+            const oldCols = matrixState.maxCols;
+            
+            // Update max dimensions
+            matrixState.maxRows = Math.max(matrixState.maxRows, newRows);
+            matrixState.maxCols = Math.max(matrixState.maxCols, newCols);
+            
+            // Expand state arrays if needed
+            while (matrixState.values.length < matrixState.maxRows) {
+                matrixState.values.push([]);
+            }
+            for (let i = 0; i < matrixState.maxRows; i++) {
+                while (matrixState.values[i].length < matrixState.maxCols + 1) {
+                    matrixState.values[i].push('0');
+                }
+            }
+            
+            // Rebuild UI
+            renderMatrixInputs(newRows, newCols);
+            
+            // Focus first new cell if we expanded
+            if (newRows > oldRows) {
+                const firstNewCell = document.getElementById(`cell_${oldRows}_0`);
+                if (firstNewCell) firstNewCell.focus();
+            } else if (newCols > oldCols) {
+                const firstNewCell = document.getElementById(`cell_0_${oldCols}`);
+                if (firstNewCell) firstNewCell.focus();
+            }
+        }
+        
+        function renderMatrixInputs(visibleRows, visibleCols) {
+            const container = document.getElementById('matrixInputContainer');
+            let html = '<div class="matrix-input"><h3>Enter Augmented Matrix [A | b]:</h3>';
+            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Your data is preserved when changing size. Expand to restore hidden values.</p>';
+
+            // Column headers
+            html += '<div class="column-header">';
+            for (let j = 0; j < visibleCols; j++) {
+                html += `<span>x${j + 1}</span>`;
+            }
+            html += '<span style="color: #999; width: 20px;">|</span>';
+            html += '<span>b</span>';
+            html += '</div>';
+
+            // Matrix rows
+            for (let i = 0; i < visibleRows; i++) {
+                html += '<div class="matrix-row">';
+                html += `<span style="min-width: 30px; color: #667eea; font-weight: 600;">R${i+1}</span>`;
+                for (let j = 0; j < visibleCols + 1; j++) {
+                    if (j === visibleCols) {
+                        html += '<span class="separator">|</span>';
+                    }
+                    const value = (matrixState.values[i] && matrixState.values[i][j]) || '0';
+                    html += `<input type="text" id="cell_${i}_${j}" value="${value}" placeholder="0" onchange="saveMatrixState()">`;
+                }
+                html += '</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ===== EQUATION STATE MANAGEMENT =====
+        
+        function saveEquationState() {
+            // Save all equation values from DOM
+            for (let i = 0; i < equationState.equations.length; i++) {
+                const input = document.getElementById(`eq_${i}`);
+                if (input) {
+                    equationState.equations[i] = input.value;
+                }
+            }
+        }
+        
+        function updateEquationCount() {
+            const newCount = parseInt(document.getElementById('numEquations').value);
+            
+            if (newCount < 1) {
+                alert('You must have at least one equation');
+                document.getElementById('numEquations').value = equationState.equations.length;
+                return;
+            }
+            
+            if (newCount > 50) {
+                const proceed = window.confirm ? window.confirm(`You're about to create ${newCount} equation inputs. Continue?`) : true;
+                if (!proceed) {
+                    document.getElementById('numEquations').value = equationState.equations.length;
+                    return;
+                }
+            }
+            
+            // Save current state
+            saveEquationState();
+            
+            const oldCount = equationState.equations.length;
+            
+            // Adjust equation array
+            if (newCount > oldCount) {
+                // Add empty equations
+                while (equationState.equations.length < newCount) {
+                    equationState.equations.push('');
+                }
+            } else if (newCount < oldCount) {
+                // Trim array - warn if confirm is available
+                const proceed = window.confirm ? window.confirm(`This will remove the last ${oldCount - newCount} equation(s). Continue?`) : true;
+                if (!proceed) {
+                    document.getElementById('numEquations').value = oldCount;
+                    return;
+                }
+                equationState.equations = equationState.equations.slice(0, newCount);
+            }
+            
+            renderEquationInputs();
+            
+            // Focus first new equation if we expanded
+            if (newCount > oldCount) {
+                setTimeout(() => {
+                    const firstNewInput = document.getElementById(`eq_${oldCount}`);
+                    if (firstNewInput) firstNewInput.focus();
+                }, 50);
+            }
+        }
+        
+        function renderEquationInputs() {
+            document.getElementById('numEquations').value = equationState.equations.length;
+            
+            const container = document.getElementById('equationInputContainer');
+            let html = '<div style="margin-top: 20px;"><h3>Enter Your Equations:</h3>';
+            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Use variables x1, x2, x3, ... Example: 2x1 - 3x2 + 5 = 7</p>';
+
+            for (let i = 0; i < equationState.equations.length; i++) {
+                html += '<div class="equation-row">';
+                html += `<label>E${i+1}:</label>`;
+                html += `<input type="text" id="eq_${i}" value="${equationState.equations[i]}" placeholder="e.g., 2x1 + 3x2 = 5" onchange="saveEquationState()">`;
+                html += '</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ===== EXISTING FRACTION CLASS (UNCHANGED) =====
         
         class Fraction {
             constructor(numerator, denominator = 1) {
@@ -737,48 +946,6 @@
             }
         }
 
-        function generateMatrix() {
-            const rows = parseInt(document.getElementById('numRows').value);
-            const cols = parseInt(document.getElementById('numCols').value);
-
-            if (rows < 1 || cols < 1) {
-                alert('Please enter valid dimensions (positive integers)');
-                return;
-            }
-
-            if (rows > 100 || cols > 100) {
-                const confirm = window.confirm(`You're about to create a ${rows}×${cols+1} matrix. This is quite large and may take some time to input and process. Continue?`);
-                if (!confirm) return;
-            }
-
-            const container = document.getElementById('matrixInputContainer');
-            let html = '<div class="matrix-input"><h3>Enter Augmented Matrix [A | b]:</h3>';
-            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Tip: For large matrices, you can use fractions (1/2), decimals (0.5), or mathematical expressions</p>';
-
-            html += '<div class="column-header">';
-            for (let j = 0; j < cols; j++) {
-                html += `<span>x${j + 1}</span>`;
-            }
-            html += '<span style="color: #999; width: 20px;">|</span>';
-            html += '<span>b</span>';
-            html += '</div>';
-
-            for (let i = 0; i < rows; i++) {
-                html += '<div class="matrix-row">';
-                html += `<span style="min-width: 30px; color: #667eea; font-weight: 600;">R${i+1}</span>`;
-                for (let j = 0; j < cols + 1; j++) {
-                    if (j === cols) {
-                        html += '<span class="separator">|</span>';
-                    }
-                    html += `<input type="text" id="cell_${i}_${j}" value="0" placeholder="0">`;
-                }
-                html += '</div>';
-            }
-
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
         function loadExample(exampleNum) {
             let rows, cols, values;
 
@@ -811,15 +978,25 @@
 
             document.getElementById('numRows').value = rows;
             document.getElementById('numCols').value = cols;
-            generateMatrix();
-
-            setTimeout(() => {
-                for (let i = 0; i < rows; i++) {
-                    for (let j = 0; j < values[i].length; j++) {
-                        document.getElementById(`cell_${i}_${j}`).value = values[i][j];
-                    }
+            
+            // Update state
+            matrixState.maxRows = Math.max(matrixState.maxRows, rows);
+            matrixState.maxCols = Math.max(matrixState.maxCols, cols);
+            
+            while (matrixState.values.length < rows) {
+                matrixState.values.push([]);
+            }
+            
+            for (let i = 0; i < rows; i++) {
+                while (matrixState.values[i].length < values[i].length) {
+                    matrixState.values[i].push('0');
                 }
-            }, 100);
+                for (let j = 0; j < values[i].length; j++) {
+                    matrixState.values[i][j] = values[i][j].toString();
+                }
+            }
+            
+            renderMatrixInputs(rows, cols);
         }
 
         function getMatrixFromInput() {
@@ -827,13 +1004,12 @@
             const cols = parseInt(document.getElementById('numCols').value);
             const matrix = [];
 
+            saveMatrixState(); // Ensure state is current
+
             for (let i = 0; i < rows; i++) {
                 const row = [];
                 for (let j = 0; j < cols + 1; j++) {
-                    const input = document.getElementById(`cell_${i}_${j}`);
-                    if (!input) continue;
-                    
-                    let value = input.value.trim();
+                    let value = matrixState.values[i][j] || '0';
                     
                     if (value === '') {
                         value = '0';
@@ -867,85 +1043,11 @@
             return matrix;
         }
 
-        // ===== NEW MODE 2: EQUATION PARSER =====
-
-        function generateEquationInputs() {
-            const numEq = parseInt(document.getElementById('numEquations').value);
-            
-            if (numEq < 1) {
-                alert('Please enter a valid number of equations');
-                return;
-            }
-
-            if (numEq > 50) {
-                const confirm = window.confirm(`You're about to create ${numEq} equation inputs. Continue?`);
-                if (!confirm) return;
-            }
-
-            const container = document.getElementById('equationInputContainer');
-            let html = '<div style="margin-top: 20px;"><h3>Enter Your Equations:</h3>';
-            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Use variables x1, x2, x3, ... and standard operators. Example: 2x1 - 3x2 + 5 = 7</p>';
-
-            for (let i = 0; i < numEq; i++) {
-                html += '<div class="equation-row">';
-                html += `<label>E${i+1}:</label>`;
-                html += `<input type="text" id="eq_${i}" placeholder="e.g., 2x1 + 3x2 = 5">`;
-                html += '</div>';
-            }
-
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        function loadEquationExample(exNum) {
-            let equations = [];
-            
-            switch(exNum) {
-                case 1: // Simple 2x2
-                    equations = [
-                        'x1 + x2 = 3',
-                        '2x1 - x2 = 0'
-                    ];
-                    break;
-                case 2: // 3x3
-                    equations = [
-                        '2x1 + x2 - x3 = 8',
-                        '-3x1 - x2 + 2x3 = -11',
-                        '-2x1 + x2 + 2x3 = -3'
-                    ];
-                    break;
-                case 3: // With expressions
-                    equations = [
-                        'sqrt(2)*x1 + x2 = 5',
-                        'cos(pi/3)*x1 + sin(pi/6)*x2 = 2',
-                        'x1 - x2 = 1'
-                    ];
-                    break;
-                case 4: // Large system
-                    equations = [
-                        'x1 + 2x2 - x3 + x4 = 10',
-                        '2x1 - x2 + 3x3 - 2x4 = 5',
-                        'x1 + x2 + x3 + x4 = 8',
-                        '3x1 - x2 + 2x3 + x4 = 12'
-                    ];
-                    break;
-            }
-
-            document.getElementById('numEquations').value = equations.length;
-            generateEquationInputs();
-
-            setTimeout(() => {
-                equations.forEach((eq, i) => {
-                    document.getElementById(`eq_${i}`).value = eq;
-                });
-            }, 100);
-        }
+        // ===== EQUATION PARSER (UNCHANGED) =====
 
         function parseEquation(equation) {
-            // Remove all whitespace for easier parsing
             equation = equation.replace(/\s+/g, '');
             
-            // Check if equation has exactly one '='
             const parts = equation.split('=');
             if (parts.length !== 2) {
                 throw new Error('Equation must have exactly one "=" sign');
@@ -954,11 +1056,9 @@
             let leftSide = parts[0];
             let rightSide = parts[1];
 
-            // Parse both sides to extract coefficients
             const leftCoeffs = parseExpression(leftSide);
             const rightCoeffs = parseExpression(rightSide);
 
-            // Move everything to left side (left - right = 0)
             const allVars = new Set([...Object.keys(leftCoeffs), ...Object.keys(rightCoeffs)]);
             const finalCoeffs = {};
 
@@ -974,24 +1074,20 @@
         function parseExpression(expr) {
             const coeffs = {};
             
-            // Handle empty expression
             if (expr === '') {
                 coeffs['constant'] = 0;
                 return coeffs;
             }
 
-            // Add leading '+' if expression doesn't start with sign
             if (expr[0] !== '+' && expr[0] !== '-') {
                 expr = '+' + expr;
             }
 
-            // Split by + and - while keeping the signs
             const terms = [];
             let currentTerm = '';
             
             for (let i = 0; i < expr.length; i++) {
                 if ((expr[i] === '+' || expr[i] === '-') && i > 0) {
-                    // Check if this is part of a function or expression
                     let inParens = 0;
                     for (let j = 0; j < i; j++) {
                         if (expr[j] === '(') inParens++;
@@ -1010,12 +1106,10 @@
             }
             terms.push(currentTerm);
 
-            // Process each term
             for (let term of terms) {
                 term = term.trim();
                 if (term === '' || term === '+' || term === '-') continue;
 
-                // Extract sign
                 let sign = 1;
                 if (term[0] === '-') {
                     sign = -1;
@@ -1024,15 +1118,12 @@
                     term = term.substring(1);
                 }
 
-                // Check if term contains variable (x followed by digits)
                 const varMatch = term.match(/x(\d+)/);
                 
                 if (varMatch) {
-                    // This term has a variable
                     const varIndex = parseInt(varMatch[1]);
                     const varName = `x${varIndex}`;
                     
-                    // Extract coefficient (everything before x)
                     const coeffPart = term.substring(0, term.indexOf('x'));
                     
                     let coeff;
@@ -1041,7 +1132,6 @@
                     } else if (coeffPart === '-') {
                         coeff = -1;
                     } else {
-                        // Evaluate the coefficient expression
                         try {
                             coeff = evaluateExpression(coeffPart);
                         } catch (e) {
@@ -1051,14 +1141,12 @@
 
                     coeff *= sign;
 
-                    // Add to coefficients
                     if (coeffs[varName]) {
                         coeffs[varName] += coeff;
                     } else {
                         coeffs[varName] = coeff;
                     }
                 } else {
-                    // This is a constant term
                     try {
                         const value = evaluateExpression(term) * sign;
                         if (coeffs['constant']) {
@@ -1076,15 +1164,12 @@
         }
 
         function equationsToMatrix() {
-            const numEq = parseInt(document.getElementById('numEquations').value);
+            saveEquationState(); // Ensure state is current
+            
             const equations = [];
             
-            // Parse all equations
-            for (let i = 0; i < numEq; i++) {
-                const input = document.getElementById(`eq_${i}`);
-                if (!input) continue;
-                
-                const eqText = input.value.trim();
+            for (let i = 0; i < equationState.equations.length; i++) {
+                const eqText = equationState.equations[i].trim();
                 if (eqText === '') {
                     throw new Error(`Equation ${i+1} is empty`);
                 }
@@ -1097,7 +1182,6 @@
                 }
             }
 
-            // Find all unique variables
             const allVars = new Set();
             for (let eq of equations) {
                 for (let key of Object.keys(eq)) {
@@ -1107,14 +1191,12 @@
                 }
             }
 
-            // Sort variables by index (x1, x2, x3, ...)
             const sortedVars = Array.from(allVars).sort((a, b) => {
                 const numA = parseInt(a.substring(1));
                 const numB = parseInt(b.substring(1));
                 return numA - numB;
             });
 
-            // Check for gaps in variable numbering
             for (let i = 0; i < sortedVars.length; i++) {
                 const expectedIndex = i + 1;
                 const actualIndex = parseInt(sortedVars[i].substring(1));
@@ -1123,18 +1205,15 @@
                 }
             }
 
-            // Build augmented matrix
             const matrix = [];
             for (let eq of equations) {
                 const row = [];
                 
-                // Add coefficients for each variable
                 for (let varName of sortedVars) {
                     const coeff = eq[varName] || 0;
                     row.push(Fraction.fromDecimal(coeff));
                 }
                 
-                // Add constant term (negated because we moved it to the right side)
                 const constant = -(eq['constant'] || 0);
                 row.push(Fraction.fromDecimal(constant));
                 
@@ -1144,7 +1223,45 @@
             return { matrix, variables: sortedVars };
         }
 
-        // ===== SHARED SOLVER CODE (UNCHANGED) =====
+        function loadEquationExample(exNum) {
+            let equations = [];
+            
+            switch(exNum) {
+                case 1:
+                    equations = [
+                        'x1 + x2 = 3',
+                        '2x1 - x2 = 0'
+                    ];
+                    break;
+                case 2:
+                    equations = [
+                        '2x1 + x2 - x3 = 8',
+                        '-3x1 - x2 + 2x3 = -11',
+                        '-2x1 + x2 + 2x3 = -3'
+                    ];
+                    break;
+                case 3:
+                    equations = [
+                        'sqrt(2)*x1 + x2 = 5',
+                        'cos(pi/3)*x1 + sin(pi/6)*x2 = 2',
+                        'x1 - x2 = 1'
+                    ];
+                    break;
+                case 4:
+                    equations = [
+                        'x1 + 2x2 - x3 + x4 = 10',
+                        '2x1 - x2 + 3x3 - 2x4 = 5',
+                        'x1 + x2 + x3 + x4 = 8',
+                        '3x1 - x2 + 2x3 + x4 = 12'
+                    ];
+                    break;
+            }
+
+            equationState.equations = equations;
+            renderEquationInputs();
+        }
+
+        // ===== SOLVER (UNCHANGED) =====
 
         function matrixToHTML(matrix, title = "Matrix", showDecimals = false) {
             const rows = matrix.length;
@@ -1468,7 +1585,6 @@
                         return;
                     }
                 } else {
-                    // Mode 2: Parse equations
                     const result = equationsToMatrix();
                     matrix = result.matrix;
                     
@@ -1567,17 +1683,66 @@
         }
 
         function clearAll() {
-            document.getElementById('matrixInputContainer').innerHTML = '';
-            document.getElementById('equationInputContainer').innerHTML = '';
-            document.getElementById('resultSection').innerHTML = '';
-            document.getElementById('resultSection').classList.remove('active');
-            document.getElementById('numRows').value = 2;
-            document.getElementById('numCols').value = 2;
-            document.getElementById('numEquations').value = 2;
+            // Simple confirmation - just clear without modal since we're sandboxed
+            const userConfirmed = window.confirm ? window.confirm('Are you sure you want to clear all data? This cannot be undone.') : true;
+            
+            if (!userConfirmed) {
+                return;
+            }
+            
+            try {
+                // Reset state with proper initialization
+                matrixState = {
+                    values: [],
+                    maxRows: 2,
+                    maxCols: 2
+                };
+                
+                // Initialize empty matrix values
+                for (let i = 0; i < 2; i++) {
+                    matrixState.values[i] = [];
+                    for (let j = 0; j < 3; j++) {
+                        matrixState.values[i][j] = '0';
+                    }
+                }
+                
+                equationState = {
+                    equations: ['', '']
+                };
+                
+                // Reset UI
+                document.getElementById('resultSection').innerHTML = '';
+                document.getElementById('resultSection').classList.remove('active');
+                document.getElementById('numRows').value = 2;
+                document.getElementById('numCols').value = 2;
+                document.getElementById('numEquations').value = 2;
+                
+                // Regenerate based on current mode
+                if (currentMode === 'matrix') {
+                    renderMatrixInputs(2, 2);
+                } else {
+                    renderEquationInputs();
+                }
+                
+                console.log('Clear all completed successfully');
+            } catch (error) {
+                console.error('Error in clearAll:', error);
+                alert('Error clearing data: ' + error.message);
+            }
         }
 
+        // ===== INITIALIZATION =====
         window.onload = function() {
-            generateMatrix();
+            // Initialize matrix state
+            for (let i = 0; i < 2; i++) {
+                matrixState.values[i] = [];
+                for (let j = 0; j < 3; j++) {
+                    matrixState.values[i][j] = '0';
+                }
+            }
+            
+            renderMatrixInputs(2, 2);
+            renderEquationInputs();
         };
     </script>
 </body>
