@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RREF Calculator</title>
+    <title>RREF Calculator - Solve Systems of Linear Equations</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -13,6 +18,7 @@
             padding: 20px;
             color: #333;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -21,15 +27,32 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 40px;
         }
+
         header {
             text-align: center;
             margin-bottom: 40px;
             padding-bottom: 20px;
             border-bottom: 3px solid #667eea;
         }
-        h1 { color: #667eea; font-size: 2.5em; margin-bottom: 10px; }
-        .subtitle { color: #666; font-size: 1.1em; }
-        .mode-selector { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
         .mode-btn {
             background: #f0f0f0;
             color: #666;
@@ -41,33 +64,159 @@
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .mode-btn.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-color: #667eea;
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
-        .mode-btn:hover:not(.active) { background: #e0e0e0; border-color: #999; }
-        .input-section { background: #f8f9fa; padding: 30px; border-radius: 15px; margin-bottom: 30px; }
-        .mode-content { display: none; }
-        .mode-content.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; }
-        input[type="number"] { width: 150px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
-        input[type="text"] { padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; font-family: 'Courier New', monospace; }
-        input:focus { outline: none; border-color: #667eea; }
-        .equation-input-container { margin-top: 20px; }
-        .equation-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; }
-        .equation-row label { min-width: 30px; margin: 0; color: #667eea; font-weight: 600; }
-        .equation-row input { flex: 1; min-width: 200px; }
-        .matrix-input { margin-top: 20px; max-height: 600px; overflow-y: auto; overflow-x: auto; padding: 15px; background: white; border-radius: 10px; }
-        .matrix-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-        .matrix-row input { width: 70px; padding: 6px; border: 2px solid #ddd; border-radius: 6px; text-align: center; font-size: 13px; }
-        .matrix-row input:nth-of-type(even) { background: rgba(102, 126, 234, 0.05); }
-        .column-header { display: flex; gap: 10px; margin-bottom: 5px; margin-left: 50px; align-items: center; }
-        .column-header span { width: 70px; text-align: center; font-weight: 600; color: #667eea; font-size: 0.9em; }
-        .separator { font-size: 24px; font-weight: bold; color: #667eea; margin: 0 5px; }
+
+        .mode-btn:hover:not(.active) {
+            background: #e0e0e0;
+            border-color: #999;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .mode-content {
+            display: none;
+        }
+
+        .mode-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input[type="number"] {
+            width: 150px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .equation-input-container {
+            margin-top: 20px;
+        }
+
+        .equation-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .equation-row label {
+            min-width: 30px;
+            margin: 0;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .equation-row input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .equation-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .matrix-input {
+            margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            overflow-x: auto;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .matrix-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .matrix-row input {
+            width: 70px;
+            padding: 6px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .matrix-row input:nth-of-type(even) {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .column-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+            margin-left: 50px;
+            align-items: center;
+        }
+
+        .column-header span {
+            width: 70px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9em;
+        }
+
+        .separator {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0 5px;
+        }
+
         button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -80,35 +229,179 @@
             transition: transform 0.2s, box-shadow 0.2s;
             margin: 10px 5px;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
-        button:active { transform: translateY(0); }
-        .secondary-btn { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .result-section { margin-top: 30px; display: none; }
-        .result-section.active { display: block; animation: slideIn 0.5s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .step { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #667eea; }
-        .step-title { font-weight: 600; color: #667eea; margin-bottom: 10px; font-size: 1.1em; }
-        .matrix-display { background: white; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', monospace; line-height: 1.8; }
-        .matrix-display table { border-collapse: collapse; margin: 10px auto; }
-        .matrix-display td { padding: 8px 15px; text-align: center; min-width: 60px; }
-        .matrix-display th { padding: 8px 15px; text-align: center; font-weight: 600; color: #667eea; background: #f0f0f0; font-size: 0.9em; }
-        .matrix-display tr:nth-child(even) td { background: #f8f9fa; }
-        .matrix-display tr:nth-child(odd) td { background: #ffffff; }
-        .matrix-display td:nth-child(even) { background: rgba(102, 126, 234, 0.05); }
-        .augmented-separator { border-left: 3px solid #667eea; padding-left: 15px !important; }
-        .solution-box { background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 25px; border-radius: 15px; margin-top: 20px; border: 2px solid #667eea; }
-        .solution-title { font-size: 1.5em; color: #667eea; margin-bottom: 15px; font-weight: 700; }
-        .solution-item { font-size: 1.2em; padding: 10px; margin: 5px 0; background: white; border-radius: 8px; }
-        .no-solution { background: #ffe0e0; border-color: #ff4444; }
-        .no-solution .solution-title { color: #ff4444; }
-        .infinite-solution { background: #fff4e0; border-color: #ff9800; }
-        .infinite-solution .solution-title { color: #ff9800; }
-        .toggle-steps { margin: 20px 0; text-align: center; }
-        .steps-container { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
-        .steps-container.expanded { max-height: 10000px; }
-        .info-box { background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #2196f3; }
-        .info-box strong { color: #1976d2; }
-        .collapsible-section { margin-bottom: 20px; }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .secondary-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .small-btn {
+            padding: 8px 20px;
+            font-size: 14px;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-section.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .matrix-display {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.8;
+        }
+
+        .matrix-display table {
+            border-collapse: collapse;
+            margin: 10px auto;
+        }
+
+        .matrix-display td {
+            padding: 8px 15px;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .matrix-display th {
+            padding: 8px 15px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            background: #f0f0f0;
+            font-size: 0.9em;
+        }
+
+        .matrix-display tr:nth-child(even) td {
+            background: #f8f9fa;
+        }
+
+        .matrix-display tr:nth-child(odd) td {
+            background: #ffffff;
+        }
+
+        .matrix-display td:nth-child(even) {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .augmented-separator {
+            border-left: 3px solid #667eea;
+            padding-left: 15px !important;
+        }
+
+        .solution-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #667eea;
+        }
+
+        .solution-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .solution-item {
+            font-size: 1.2em;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .no-solution {
+            background: #ffe0e0;
+            border-color: #ff4444;
+        }
+
+        .no-solution .solution-title {
+            color: #ff4444;
+        }
+
+        .infinite-solution {
+            background: #fff4e0;
+            border-color: #ff9800;
+        }
+
+        .infinite-solution .solution-title {
+            color: #ff9800;
+        }
+
+        .toggle-steps {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .steps-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .steps-container.expanded {
+            max-height: 10000px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-box strong {
+            color: #1976d2;
+        }
+
+        .collapsible-section {
+            margin-bottom: 20px;
+        }
+
         .collapsible-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -121,20 +414,74 @@
             align-items: center;
             transition: transform 0.2s;
         }
-        .collapsible-header:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3); }
-        .collapsible-header::after { content: '▼'; transition: transform 0.3s; }
-        .collapsible-header.active::after { transform: rotate(180deg); }
-        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-        .collapsible-content.expanded { max-height: 1000px; }
-        .collapsible-content-inner { padding: 15px; background: #f8f9fa; border-radius: 0 0 8px 8px; margin-top: 2px; }
-        .example-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
-        .example-btn { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 10px 20px; font-size: 14px; }
+
+        .collapsible-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .collapsible-header::after {
+            content: '▼';
+            transition: transform 0.3s;
+        }
+
+        .collapsible-header.active::after {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible-content.expanded {
+            max-height: 1000px;
+        }
+
+        .collapsible-content-inner {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+            margin-top: 2px;
+        }
+
         @media (max-width: 768px) {
-            .container { padding: 20px; }
-            h1 { font-size: 1.8em; }
-            .matrix-row input { width: 60px; padding: 6px; font-size: 12px; }
-            button { padding: 12px 30px; font-size: 14px; }
-            .mode-selector { flex-direction: column; }
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .matrix-row input {
+                width: 60px;
+                padding: 6px;
+                font-size: 12px;
+            }
+
+            button {
+                padding: 12px 30px;
+                font-size: 14px;
+            }
+
+            .mode-selector {
+                flex-direction: column;
+            }
+        }
+
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .example-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            padding: 10px 20px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -146,21 +493,35 @@
         </header>
 
         <div class="mode-selector">
-            <button class="mode-btn active" onclick="switchMode('matrix')">📊 Mode 1: Manual Matrix Input</button>
-            <button class="mode-btn" onclick="switchMode('equation')">✏️ Mode 2: Equation Input</button>
+            <button class="mode-btn active" onclick="switchMode('matrix')">
+                📊 Mode 1: Manual Matrix Input
+            </button>
+            <button class="mode-btn" onclick="switchMode('equation')">
+                ✏️ Mode 2: Equation Input
+            </button>
         </div>
 
         <div class="input-section">
+            <!-- MODE 1: Matrix Input -->
             <div id="matrixMode" class="mode-content active">
                 <div class="collapsible-section">
-                    <div class="collapsible-header" onclick="toggleCollapsible('howToUse')">📖 How to Use</div>
+                    <div class="collapsible-header" onclick="toggleCollapsible('howToUse')">
+                        📖 How to Use This Calculator
+                    </div>
                     <div id="howToUse" class="collapsible-content">
                         <div class="collapsible-content-inner">
-                            <strong>Basic Usage:</strong> Enter dimensions, input your augmented matrix [A | b], and click Solve!
+                            <strong>Basic Usage:</strong> Enter the number of equations and variables, then input your augmented matrix [A | b]. 
+                            The calculator will transform it to RREF form and provide the solution!
                             <br><br>
-                            <strong>🚀 No Size Limits:</strong> Solve 2×2, 10×10, 100×100, or larger.
+                            <strong>🚀 No Size Limits:</strong> This calculator supports unlimited dimensions! Solve 2×2, 10×10, 100×100, or even larger systems.
                             <br><br>
-                            <strong>✨ Supports:</strong> Fractions (1/2), expressions (sin(pi/4)), constants (pi, e)
+                            <strong>✨ Advanced Features:</strong> You can use mathematical expressions including:
+                            <ul style="margin: 10px 0 0 20px;">
+                                <li><strong>Trig functions:</strong> sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)</li>
+                                <li><strong>Operations:</strong> +, -, *, /, ^ (power), sqrt(x)</li>
+                                <li><strong>Constants:</strong> pi, e</li>
+                                <li><strong>Examples:</strong> cos(atan(2)), sin(pi/4), sqrt(2)/2, 3*cos(pi/6)</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -178,15 +539,17 @@
                 <button onclick="updateMatrixSize()">Update Matrix Size</button>
 
                 <div class="collapsible-section" style="margin-top: 15px;">
-                    <div class="collapsible-header" onclick="toggleCollapsible('examples')">💡 Examples</div>
+                    <div class="collapsible-header" onclick="toggleCollapsible('examples')">
+                        💡 Load Example Problems
+                    </div>
                     <div id="examples" class="collapsible-content">
                         <div class="collapsible-content-inner">
                             <div class="example-buttons">
-                                <button class="example-btn" onclick="loadExample(1)">2×2 Unique</button>
-                                <button class="example-btn" onclick="loadExample(2)">3×3 Unique</button>
-                                <button class="example-btn" onclick="loadExample(3)">Infinite Solutions</button>
-                                <button class="example-btn" onclick="loadExample(4)">No Solution</button>
-                                <button class="example-btn" onclick="loadExample(5)">With Trig</button>
+                                <button class="example-btn" onclick="loadExample(1)">Example 1: 2×2 Unique</button>
+                                <button class="example-btn" onclick="loadExample(2)">Example 2: 3×3 Unique</button>
+                                <button class="example-btn" onclick="loadExample(3)">Example 3: Infinite Solutions</button>
+                                <button class="example-btn" onclick="loadExample(4)">Example 4: No Solution</button>
+                                <button class="example-btn" onclick="loadExample(5)">Example 5: Trig Functions</button>
                             </div>
                         </div>
                     </div>
@@ -195,11 +558,18 @@
                 <div id="matrixInputContainer"></div>
             </div>
 
+            <!-- MODE 2: Equation Input -->
             <div id="equationMode" class="mode-content">
                 <div class="info-box">
                     <strong>📝 Equation Input Mode</strong><br>
-                    Enter equations like: 2x1 + 3x2 = 7<br>
-                    Use x1, x2, x3, ... for variables. Supports all math expressions.
+                    Enter your system of linear equations in algebraic form. Use variables x₁, x₂, x₃, ... (type as x1, x2, x3, ...)<br>
+                    <br>
+                    <strong>Examples:</strong><br>
+                    • <code>2x1 + 3x2 = 7</code><br>
+                    • <code>x1 - 3x2 + 6x5 = cos(pi)</code><br>
+                    • <code>sqrt(2)*x1 + x2 - x3 = 5</code><br>
+                    <br>
+                    <strong>Supported:</strong> All mathematical expressions (sin, cos, sqrt, pi, e, etc.), fractions, decimals
                 </div>
 
                 <div class="form-group">
@@ -210,14 +580,16 @@
                 <button onclick="updateEquationCount()">Update Number of Equations</button>
 
                 <div class="collapsible-section" style="margin-top: 15px;">
-                    <div class="collapsible-header" onclick="toggleCollapsible('eqExamples')">💡 Examples</div>
+                    <div class="collapsible-header" onclick="toggleCollapsible('eqExamples')">
+                        💡 Load Equation Examples
+                    </div>
                     <div id="eqExamples" class="collapsible-content">
                         <div class="collapsible-content-inner">
                             <div class="example-buttons">
-                                <button class="example-btn" onclick="loadEquationExample(1)">Simple 2×2</button>
-                                <button class="example-btn" onclick="loadEquationExample(2)">3×3 System</button>
-                                <button class="example-btn" onclick="loadEquationExample(3)">With Expressions</button>
-                                <button class="example-btn" onclick="loadEquationExample(4)">Large System</button>
+                                <button class="example-btn" onclick="loadEquationExample(1)">Ex 1: Simple 2×2</button>
+                                <button class="example-btn" onclick="loadEquationExample(2)">Ex 2: 3×3 System</button>
+                                <button class="example-btn" onclick="loadEquationExample(3)">Ex 3: With Expressions</button>
+                                <button class="example-btn" onclick="loadEquationExample(4)">Ex 4: Large System</button>
                             </div>
                         </div>
                     </div>
@@ -237,222 +609,415 @@
 
     <script>
         let currentMode = 'matrix';
-        let matrixState = { values: [], maxRows: 2, maxCols: 2 };
-        let equationState = { equations: ['', ''] };
-        let currentMatrix = [];
-        let steps = [];
+        
+        // State storage for both modes (in-memory arrays preserving all data)
+        let matrixState = {
+            values: [], // 2D array of strings
+            maxRows: 2,
+            maxCols: 2
+        };
+        
+        let equationState = {
+            equations: ['', ''] // array of equation strings
+        };
 
         function switchMode(mode) {
-            if (currentMode === 'matrix') saveMatrixState();
-            else saveEquationState();
+            // Save current mode's data before switching
+            if (currentMode === 'matrix') {
+                saveMatrixState();
+            } else {
+                saveEquationState();
+            }
+            
             currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Update button states
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
             event.target.classList.add('active');
-            document.querySelectorAll('.mode-content').forEach(content => content.classList.remove('active'));
-            document.getElementById(mode + 'Mode').classList.add('active');
-        }
-
-        function saveMatrixState() {
-            while (matrixState.values.length < matrixState.maxRows) matrixState.values.push([]);
-            const currentRows = parseInt(document.getElementById('numRows').value);
-            const currentCols = parseInt(document.getElementById('numCols').value);
-            for (let i = 0; i < currentRows; i++) {
-                while (matrixState.values[i].length < matrixState.maxCols + 1) matrixState.values[i].push('0');
-                for (let j = 0; j < currentCols + 1; j++) {
-                    const input = document.getElementById('cell_' + i + '_' + j);
-                    if (input) matrixState.values[i][j] = input.value;
-                }
+            
+            // Update content visibility
+            document.querySelectorAll('.mode-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            if (mode === 'matrix') {
+                document.getElementById('matrixMode').classList.add('active');
+            } else {
+                document.getElementById('equationMode').classList.add('active');
             }
         }
 
+        // ===== MATRIX STATE MANAGEMENT =====
+        
+        function saveMatrixState() {
+            const rows = parseInt(document.getElementById('numRows').value);
+            const cols = parseInt(document.getElementById('numCols').value);
+            
+            // Expand state array if needed
+            while (matrixState.values.length < matrixState.maxRows) {
+                matrixState.values.push([]);
+            }
+            
+            // Save current values from DOM
+            for (let i = 0; i < matrixState.maxRows; i++) {
+                while (matrixState.values[i].length < matrixState.maxCols + 1) {
+                    matrixState.values[i].push('0');
+                }
+                for (let j = 0; j < matrixState.maxCols + 1; j++) {
+                    const input = document.getElementById(`cell_${i}_${j}`);
+                    if (input) {
+                        matrixState.values[i][j] = input.value;
+                    }
+                }
+            }
+        }
+        
         function updateMatrixSize() {
             const newRows = parseInt(document.getElementById('numRows').value);
             const newCols = parseInt(document.getElementById('numCols').value);
-            if (newRows < 1 || newCols < 1) { alert('Please enter valid dimensions'); return; }
+
+            if (newRows < 1 || newCols < 1) {
+                alert('Please enter valid dimensions (positive integers)');
+                return;
+            }
+
             if (newRows > 100 || newCols > 100) {
-                const proceed = window.confirm ? window.confirm('Creating ' + newRows + '×' + (newCols+1) + ' matrix. Continue?') : true;
+                const proceed = window.confirm ? window.confirm(`You're about to create a ${newRows}×${newCols+1} matrix. This is quite large. Continue?`) : true;
                 if (!proceed) return;
             }
+
+            // Save current state before resizing
             saveMatrixState();
+            
             const oldRows = matrixState.maxRows;
             const oldCols = matrixState.maxCols;
+            
+            // Update max dimensions
             matrixState.maxRows = Math.max(matrixState.maxRows, newRows);
             matrixState.maxCols = Math.max(matrixState.maxCols, newCols);
-            while (matrixState.values.length < matrixState.maxRows) matrixState.values.push([]);
-            for (let i = 0; i < matrixState.maxRows; i++) {
-                while (matrixState.values[i].length < matrixState.maxCols + 1) matrixState.values[i].push('0');
+            
+            // Expand state arrays if needed
+            while (matrixState.values.length < matrixState.maxRows) {
+                matrixState.values.push([]);
             }
+            for (let i = 0; i < matrixState.maxRows; i++) {
+                while (matrixState.values[i].length < matrixState.maxCols + 1) {
+                    matrixState.values[i].push('0');
+                }
+            }
+            
+            // Rebuild UI
             renderMatrixInputs(newRows, newCols);
+            
+            // Focus first new cell if we expanded
             if (newRows > oldRows) {
-                setTimeout(() => {
-                    const cell = document.getElementById('cell_' + oldRows + '_0');
-                    if (cell) cell.focus();
-                }, 50);
+                const firstNewCell = document.getElementById(`cell_${oldRows}_0`);
+                if (firstNewCell) firstNewCell.focus();
             } else if (newCols > oldCols) {
-                setTimeout(() => {
-                    const cell = document.getElementById('cell_0_' + oldCols);
-                    if (cell) cell.focus();
-                }, 50);
+                const firstNewCell = document.getElementById(`cell_0_${oldCols}`);
+                if (firstNewCell) firstNewCell.focus();
             }
         }
-
+        
         function renderMatrixInputs(visibleRows, visibleCols) {
             const container = document.getElementById('matrixInputContainer');
             let html = '<div class="matrix-input"><h3>Enter Augmented Matrix [A | b]:</h3>';
-            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Data preserved when resizing</p>';
+            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Your data is preserved when changing size. Expand to restore hidden values.</p>';
+
+            // Column headers
             html += '<div class="column-header">';
-            for (let j = 0; j < visibleCols; j++) html += '<span>x' + (j + 1) + '</span>';
-            html += '<span style="color: #999; width: 20px;">|</span><span>b</span></div>';
+            for (let j = 0; j < visibleCols; j++) {
+                html += `<span>x${j + 1}</span>`;
+            }
+            html += '<span style="color: #999; width: 20px;">|</span>';
+            html += '<span>b</span>';
+            html += '</div>';
+
+            // Matrix rows
             for (let i = 0; i < visibleRows; i++) {
-                html += '<div class="matrix-row"><span style="min-width: 30px; color: #667eea; font-weight: 600;">R' + (i+1) + '</span>';
+                html += '<div class="matrix-row">';
+                html += `<span style="min-width: 30px; color: #667eea; font-weight: 600;">R${i+1}</span>`;
                 for (let j = 0; j < visibleCols + 1; j++) {
-                    if (j === visibleCols) html += '<span class="separator">|</span>';
+                    if (j === visibleCols) {
+                        html += '<span class="separator">|</span>';
+                    }
                     const value = (matrixState.values[i] && matrixState.values[i][j]) || '0';
-                    html += '<input type="text" id="cell_' + i + '_' + j + '" value="' + value + '" placeholder="0" onchange="saveMatrixState()">';
+                    html += `<input type="text" id="cell_${i}_${j}" value="${value}" placeholder="0" onchange="saveMatrixState()">`;
                 }
                 html += '</div>';
             }
+
             html += '</div>';
             container.innerHTML = html;
         }
 
+        // ===== EQUATION STATE MANAGEMENT =====
+        
         function saveEquationState() {
+            // Save all equation values from DOM
             for (let i = 0; i < equationState.equations.length; i++) {
-                const input = document.getElementById('eq_' + i);
-                if (input) equationState.equations[i] = input.value;
+                const input = document.getElementById(`eq_${i}`);
+                if (input) {
+                    equationState.equations[i] = input.value;
+                }
             }
         }
-
+        
         function updateEquationCount() {
             const newCount = parseInt(document.getElementById('numEquations').value);
-            if (newCount < 1) { alert('Must have at least one equation'); document.getElementById('numEquations').value = equationState.equations.length; return; }
+            
+            if (newCount < 1) {
+                alert('You must have at least one equation');
+                document.getElementById('numEquations').value = equationState.equations.length;
+                return;
+            }
+            
             if (newCount > 50) {
-                const proceed = window.confirm ? window.confirm('Creating ' + newCount + ' equations. Continue?') : true;
-                if (!proceed) { document.getElementById('numEquations').value = equationState.equations.length; return; }
+                const proceed = window.confirm ? window.confirm(`You're about to create ${newCount} equation inputs. Continue?`) : true;
+                if (!proceed) {
+                    document.getElementById('numEquations').value = equationState.equations.length;
+                    return;
+                }
             }
+            
+            // Save current state
             saveEquationState();
+            
             const oldCount = equationState.equations.length;
+            
+            // Adjust equation array
             if (newCount > oldCount) {
-                while (equationState.equations.length < newCount) equationState.equations.push('');
+                // Add empty equations
+                while (equationState.equations.length < newCount) {
+                    equationState.equations.push('');
+                }
             } else if (newCount < oldCount) {
-                const proceed = window.confirm ? window.confirm('Hide last ' + (oldCount - newCount) + ' equation(s)?') : true;
-                if (!proceed) { document.getElementById('numEquations').value = oldCount; return; }
+                // Trim array - warn if confirm is available
+                const proceed = window.confirm ? window.confirm(`This will remove the last ${oldCount - newCount} equation(s). Continue?`) : true;
+                if (!proceed) {
+                    document.getElementById('numEquations').value = oldCount;
+                    return;
+                }
+                equationState.equations = equationState.equations.slice(0, newCount);
             }
+            
             renderEquationInputs();
+            
+            // Focus first new equation if we expanded
             if (newCount > oldCount) {
                 setTimeout(() => {
-                    const input = document.getElementById('eq_' + oldCount);
-                    if (input) input.focus();
+                    const firstNewInput = document.getElementById(`eq_${oldCount}`);
+                    if (firstNewInput) firstNewInput.focus();
                 }, 50);
             }
         }
-
+        
         function renderEquationInputs() {
-            const visibleCount = parseInt(document.getElementById('numEquations').value);
+            document.getElementById('numEquations').value = equationState.equations.length;
+            
             const container = document.getElementById('equationInputContainer');
             let html = '<div style="margin-top: 20px;"><h3>Enter Your Equations:</h3>';
-            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Use x1, x2, x3, ... Example: 2x1 - 3x2 = 5</p>';
-            for (let i = 0; i < visibleCount; i++) {
-                while (equationState.equations.length <= i) equationState.equations.push('');
-                html += '<div class="equation-row"><label>E' + (i+1) + ':</label>';
-                html += '<input type="text" id="eq_' + i + '" value="' + equationState.equations[i] + '" placeholder="e.g., 2x1 + 3x2 = 5" onchange="saveEquationState()"></div>';
+            html += '<p style="color: #666; font-size: 0.9em; margin: 10px 0;">💡 Use variables x1, x2, x3, ... Example: 2x1 - 3x2 + 5 = 7</p>';
+
+            for (let i = 0; i < equationState.equations.length; i++) {
+                html += '<div class="equation-row">';
+                html += `<label>E${i+1}:</label>`;
+                html += `<input type="text" id="eq_${i}" value="${equationState.equations[i]}" placeholder="e.g., 2x1 + 3x2 = 5" onchange="saveEquationState()">`;
+                html += '</div>';
             }
+
             html += '</div>';
             container.innerHTML = html;
         }
 
+        // ===== EXISTING FRACTION CLASS (UNCHANGED) =====
+        
         class Fraction {
             constructor(numerator, denominator = 1) {
                 if (denominator === 0) throw new Error("Denominator cannot be zero");
+                
                 const gcd = this.gcd(Math.abs(numerator), Math.abs(denominator));
                 this.num = numerator / gcd;
                 this.den = denominator / gcd;
-                if (this.den < 0) { this.num = -this.num; this.den = -this.den; }
+                
+                if (this.den < 0) {
+                    this.num = -this.num;
+                    this.den = -this.den;
+                }
             }
-            gcd(a, b) { return b === 0 ? a : this.gcd(b, a % b); }
+
+            gcd(a, b) {
+                return b === 0 ? a : this.gcd(b, a % b);
+            }
+
             static fromDecimal(decimal) {
                 const precision = 1000000;
                 const num = Math.round(decimal * precision);
                 return new Fraction(num, precision);
             }
-            add(other) { return new Fraction(this.num * other.den + other.num * this.den, this.den * other.den); }
-            subtract(other) { return new Fraction(this.num * other.den - other.num * this.den, this.den * other.den); }
-            multiply(other) { return new Fraction(this.num * other.num, this.den * other.den); }
-            divide(other) { return new Fraction(this.num * other.den, this.den * other.num); }
-            isZero() { return this.num === 0; }
-            isOne() { return this.num === this.den; }
-            negate() { return new Fraction(-this.num, this.den); }
-            toString() { if (this.den === 1) return this.num.toString(); return this.num + '/' + this.den; }
-            toNumber() { return this.num / this.den; }
+
+            add(other) {
+                return new Fraction(
+                    this.num * other.den + other.num * this.den,
+                    this.den * other.den
+                );
+            }
+
+            subtract(other) {
+                return new Fraction(
+                    this.num * other.den - other.num * this.den,
+                    this.den * other.den
+                );
+            }
+
+            multiply(other) {
+                return new Fraction(this.num * other.num, this.den * other.den);
+            }
+
+            divide(other) {
+                return new Fraction(this.num * other.den, this.den * other.num);
+            }
+
+            isZero() {
+                return this.num === 0;
+            }
+
+            isOne() {
+                return this.num === this.den;
+            }
+
+            negate() {
+                return new Fraction(-this.num, this.den);
+            }
+
+            toString() {
+                if (this.den === 1) return this.num.toString();
+                return `${this.num}/${this.den}`;
+            }
+
+            toNumber() {
+                return this.num / this.den;
+            }
         }
+
+        let currentMatrix = [];
+        let steps = [];
 
         function evaluateExpression(expr) {
             if (expr === '' || expr === '0') return 0;
+            
             const numVal = parseFloat(expr);
-            if (!isNaN(numVal) && isFinite(numVal) && expr.trim() === numVal.toString()) return numVal;
+            if (!isNaN(numVal) && isFinite(numVal) && expr.trim() === numVal.toString()) {
+                return numVal;
+            }
+            
             let processedExpr = expr.trim();
-            processedExpr = processedExpr.replace(/\bpi\b/gi, '(Math.PI)').replace(/\be\b/gi, '(Math.E)');
-            processedExpr = processedExpr.replace(/\barcsin\(/gi, 'Math.asin(').replace(/\barccos\(/gi, 'Math.acos(').replace(/\barctan\(/gi, 'Math.atan(');
-            processedExpr = processedExpr.replace(/\basin\(/gi, 'Math.asin(').replace(/\bacos\(/gi, 'Math.acos(').replace(/\batan\(/gi, 'Math.atan(');
-            processedExpr = processedExpr.replace(/\bsin\(/gi, 'Math.sin(').replace(/\bcos\(/gi, 'Math.cos(').replace(/\btan\(/gi, 'Math.tan(');
-            processedExpr = processedExpr.replace(/\bsqrt\(/gi, 'Math.sqrt(').replace(/\babs\(/gi, 'Math.abs(');
-            processedExpr = processedExpr.replace(/\blog\(/gi, 'Math.log10(').replace(/\bln\(/gi, 'Math.log(').replace(/\bexp\(/gi, 'Math.exp(');
+            
+            processedExpr = processedExpr.replace(/\bpi\b/gi, '(Math.PI)');
+            processedExpr = processedExpr.replace(/\be\b/gi, '(Math.E)');
+            
+            processedExpr = processedExpr.replace(/\barcsin\(/gi, 'Math.asin(');
+            processedExpr = processedExpr.replace(/\barccos\(/gi, 'Math.acos(');
+            processedExpr = processedExpr.replace(/\barctan\(/gi, 'Math.atan(');
+            processedExpr = processedExpr.replace(/\basin\(/gi, 'Math.asin(');
+            processedExpr = processedExpr.replace(/\bacos\(/gi, 'Math.acos(');
+            processedExpr = processedExpr.replace(/\batan\(/gi, 'Math.atan(');
+            processedExpr = processedExpr.replace(/\bsin\(/gi, 'Math.sin(');
+            processedExpr = processedExpr.replace(/\bcos\(/gi, 'Math.cos(');
+            processedExpr = processedExpr.replace(/\btan\(/gi, 'Math.tan(');
+            processedExpr = processedExpr.replace(/\bsqrt\(/gi, 'Math.sqrt(');
+            processedExpr = processedExpr.replace(/\babs\(/gi, 'Math.abs(');
+            processedExpr = processedExpr.replace(/\blog\(/gi, 'Math.log10(');
+            processedExpr = processedExpr.replace(/\bln\(/gi, 'Math.log(');
+            processedExpr = processedExpr.replace(/\bexp\(/gi, 'Math.exp(');
+            
             processedExpr = processedExpr.replace(/\^/g, '**');
+            
             try {
                 const result = Function('"use strict"; return (' + processedExpr + ')')();
-                if (isNaN(result) || !isFinite(result)) throw new Error('Result is not a valid number');
+                if (isNaN(result) || !isFinite(result)) {
+                    throw new Error('Result is not a valid number');
+                }
                 return result;
             } catch (e) {
-                throw new Error('Cannot evaluate "' + expr + '": ' + e.message);
+                throw new Error(`Cannot evaluate "${expr}": ${e.message}`);
             }
         }
 
         function loadExample(exampleNum) {
             let rows, cols, values;
+
             switch(exampleNum) {
-                case 1: rows = 2; cols = 2; values = [[1, 1, 3], [2, -1, 0]]; break;
-                case 2: rows = 3; cols = 3; values = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]]; break;
-                case 3: rows = 2; cols = 3; values = [[1, 2, -1, 3], [2, 4, -2, 6]]; break;
-                case 4: rows = 2; cols = 2; values = [[1, 1, 1], [1, 1, 2]]; break;
-                case 5: rows = 3; cols = 3; values = [['cos(atan(2))', 'sin(atan(2))', '0', 5], ['sin(pi/4)', 'cos(pi/4)', '1', 'sqrt(2)'], ['1', '0', 'cos(pi/3)', 2]]; break;
+                case 1:
+                    rows = 2; cols = 2;
+                    values = [[1, 1, 3], [2, -1, 0]];
+                    break;
+                case 2:
+                    rows = 3; cols = 3;
+                    values = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]];
+                    break;
+                case 3:
+                    rows = 2; cols = 3;
+                    values = [[1, 2, -1, 3], [2, 4, -2, 6]];
+                    break;
+                case 4:
+                    rows = 2; cols = 2;
+                    values = [[1, 1, 1], [1, 1, 2]];
+                    break;
+                case 5:
+                    rows = 3; cols = 3;
+                    values = [
+                        ['cos(atan(2))', 'sin(atan(2))', '0', 5],
+                        ['sin(pi/4)', 'cos(pi/4)', '1', 'sqrt(2)'],
+                        ['1', '0', 'cos(pi/3)', 2]
+                    ];
+                    break;
             }
+
             document.getElementById('numRows').value = rows;
             document.getElementById('numCols').value = cols;
+            
+            // Update state
             matrixState.maxRows = Math.max(matrixState.maxRows, rows);
             matrixState.maxCols = Math.max(matrixState.maxCols, cols);
-            while (matrixState.values.length < rows) matrixState.values.push([]);
+            
+            while (matrixState.values.length < rows) {
+                matrixState.values.push([]);
+            }
+            
             for (let i = 0; i < rows; i++) {
-                while (matrixState.values[i].length < values[i].length) matrixState.values[i].push('0');
-                for (let j = 0; j < values[i].length; j++) matrixState.values[i][j] = values[i][j].toString();
+                while (matrixState.values[i].length < values[i].length) {
+                    matrixState.values[i].push('0');
+                }
+                for (let j = 0; j < values[i].length; j++) {
+                    matrixState.values[i][j] = values[i][j].toString();
+                }
             }
+            
             renderMatrixInputs(rows, cols);
-        }
-
-        function loadEquationExample(exNum) {
-            let equations = [];
-            switch(exNum) {
-                case 1: equations = ['x1 + x2 = 3', '2x1 - x2 = 0']; break;
-                case 2: equations = ['2x1 + x2 - x3 = 8', '-3x1 - x2 + 2x3 = -11', '-2x1 + x2 + 2x3 = -3']; break;
-                case 3: equations = ['sqrt(2)*x1 + x2 = 5', 'cos(pi/3)*x1 + sin(pi/6)*x2 = 2', 'x1 - x2 = 1']; break;
-                case 4: equations = ['x1 + 2x2 - x3 + x4 = 10', '2x1 - x2 + 3x3 - 2x4 = 5', 'x1 + x2 + x3 + x4 = 8', '3x1 - x2 + 2x3 + x4 = 12']; break;
-            }
-            equationState.equations = equations;
-            document.getElementById('numEquations').value = equations.length;
-            renderEquationInputs();
         }
 
         function getMatrixFromInput() {
             const rows = parseInt(document.getElementById('numRows').value);
             const cols = parseInt(document.getElementById('numCols').value);
             const matrix = [];
-            saveMatrixState();
+
+            saveMatrixState(); // Ensure state is current
+
             for (let i = 0; i < rows; i++) {
                 const row = [];
                 for (let j = 0; j < cols + 1; j++) {
                     let value = matrixState.values[i][j] || '0';
-                    if (value === '') value = '0';
+                    
+                    if (value === '') {
+                        value = '0';
+                    }
+                    
                     try {
                         const hasFunctions = /sin|cos|tan|sqrt|pi|e|arcsin|arccos|arctan/i.test(value);
+                        
                         if (value.includes('/') && !hasFunctions && !value.includes('(')) {
                             const parts = value.split('/');
                             if (parts.length === 2) {
@@ -464,40 +1029,63 @@
                                 }
                             }
                         }
+                        
                         const evaluated = evaluateExpression(value);
                         row.push(Fraction.fromDecimal(evaluated));
                     } catch (e) {
-                        alert('Error in cell [Row ' + (i+1) + ', Col ' + (j+1) + ']: ' + e.message + '\nYour input: "' + value + '"');
+                        alert(`Error in cell [Row ${i+1}, Col ${j+1}]: ${e.message}\nYour input: "${value}"`);
                         throw e;
                     }
                 }
                 matrix.push(row);
             }
+
             return matrix;
         }
 
+        // ===== EQUATION PARSER (UNCHANGED) =====
+
         function parseEquation(equation) {
             equation = equation.replace(/\s+/g, '');
+            
             const parts = equation.split('=');
-            if (parts.length !== 2) throw new Error('Equation must have exactly one "=" sign');
-            const leftCoeffs = parseExpression(parts[0]);
-            const rightCoeffs = parseExpression(parts[1]);
+            if (parts.length !== 2) {
+                throw new Error('Equation must have exactly one "=" sign');
+            }
+
+            let leftSide = parts[0];
+            let rightSide = parts[1];
+
+            const leftCoeffs = parseExpression(leftSide);
+            const rightCoeffs = parseExpression(rightSide);
+
             const allVars = new Set([...Object.keys(leftCoeffs), ...Object.keys(rightCoeffs)]);
             const finalCoeffs = {};
+
             for (let varName of allVars) {
                 const leftVal = leftCoeffs[varName] || 0;
                 const rightVal = rightCoeffs[varName] || 0;
                 finalCoeffs[varName] = leftVal - rightVal;
             }
+
             return finalCoeffs;
         }
 
         function parseExpression(expr) {
             const coeffs = {};
-            if (expr === '') { coeffs['constant'] = 0; return coeffs; }
-            if (expr[0] !== '+' && expr[0] !== '-') expr = '+' + expr;
+            
+            if (expr === '') {
+                coeffs['constant'] = 0;
+                return coeffs;
+            }
+
+            if (expr[0] !== '+' && expr[0] !== '-') {
+                expr = '+' + expr;
+            }
+
             const terms = [];
             let currentTerm = '';
+            
             for (let i = 0; i < expr.length; i++) {
                 if ((expr[i] === '+' || expr[i] === '-') && i > 0) {
                     let inParens = 0;
@@ -505,123 +1093,243 @@
                         if (expr[j] === '(') inParens++;
                         if (expr[j] === ')') inParens--;
                     }
-                    if (inParens === 0) { terms.push(currentTerm); currentTerm = expr[i]; }
-                    else currentTerm += expr[i];
-                } else currentTerm += expr[i];
+                    
+                    if (inParens === 0) {
+                        terms.push(currentTerm);
+                        currentTerm = expr[i];
+                    } else {
+                        currentTerm += expr[i];
+                    }
+                } else {
+                    currentTerm += expr[i];
+                }
             }
             terms.push(currentTerm);
+
             for (let term of terms) {
                 term = term.trim();
                 if (term === '' || term === '+' || term === '-') continue;
+
                 let sign = 1;
-                if (term[0] === '-') { sign = -1; term = term.substring(1); }
-                else if (term[0] === '+') term = term.substring(1);
+                if (term[0] === '-') {
+                    sign = -1;
+                    term = term.substring(1);
+                } else if (term[0] === '+') {
+                    term = term.substring(1);
+                }
+
                 const varMatch = term.match(/x(\d+)/);
+                
                 if (varMatch) {
                     const varIndex = parseInt(varMatch[1]);
-                    const varName = 'x' + varIndex;
+                    const varName = `x${varIndex}`;
+                    
                     const coeffPart = term.substring(0, term.indexOf('x'));
+                    
                     let coeff;
-                    if (coeffPart === '' || coeffPart === '+') coeff = 1;
-                    else if (coeffPart === '-') coeff = -1;
-                    else {
-                        try { coeff = evaluateExpression(coeffPart); }
-                        catch (e) { throw new Error('Cannot parse coefficient "' + coeffPart + '"'); }
+                    if (coeffPart === '' || coeffPart === '+') {
+                        coeff = 1;
+                    } else if (coeffPart === '-') {
+                        coeff = -1;
+                    } else {
+                        try {
+                            coeff = evaluateExpression(coeffPart);
+                        } catch (e) {
+                            throw new Error(`Cannot parse coefficient "${coeffPart}" in term "${sign > 0 ? '+' : '-'}${term}"`);
+                        }
                     }
+
                     coeff *= sign;
-                    if (coeffs[varName]) coeffs[varName] += coeff;
-                    else coeffs[varName] = coeff;
+
+                    if (coeffs[varName]) {
+                        coeffs[varName] += coeff;
+                    } else {
+                        coeffs[varName] = coeff;
+                    }
                 } else {
                     try {
                         const value = evaluateExpression(term) * sign;
-                        if (coeffs['constant']) coeffs['constant'] += value;
-                        else coeffs['constant'] = value;
-                    } catch (e) { throw new Error('Cannot parse term "' + term + '"'); }
+                        if (coeffs['constant']) {
+                            coeffs['constant'] += value;
+                        } else {
+                            coeffs['constant'] = value;
+                        }
+                    } catch (e) {
+                        throw new Error(`Cannot parse term "${sign > 0 ? '+' : '-'}${term}"`);
+                    }
                 }
             }
+
             return coeffs;
         }
 
         function equationsToMatrix() {
-            saveEquationState();
-            const visibleCount = parseInt(document.getElementById('numEquations').value);
+            saveEquationState(); // Ensure state is current
+            
             const equations = [];
-            for (let i = 0; i < visibleCount; i++) {
+            
+            for (let i = 0; i < equationState.equations.length; i++) {
                 const eqText = equationState.equations[i].trim();
-                if (eqText === '') throw new Error('Equation ' + (i+1) + ' is empty');
+                if (eqText === '') {
+                    throw new Error(`Equation ${i+1} is empty`);
+                }
+                
                 try {
                     const coeffs = parseEquation(eqText);
                     equations.push(coeffs);
                 } catch (e) {
-                    throw new Error('Error in Equation ' + (i+1) + ': ' + e.message + '\nYour input: "' + eqText + '"');
+                    throw new Error(`Error in Equation ${i+1}: ${e.message}\nYour input: "${eqText}"`);
                 }
             }
+
             const allVars = new Set();
             for (let eq of equations) {
                 for (let key of Object.keys(eq)) {
-                    if (key !== 'constant') allVars.add(key);
+                    if (key !== 'constant') {
+                        allVars.add(key);
+                    }
                 }
             }
+
             const sortedVars = Array.from(allVars).sort((a, b) => {
                 const numA = parseInt(a.substring(1));
                 const numB = parseInt(b.substring(1));
                 return numA - numB;
             });
+
+            for (let i = 0; i < sortedVars.length; i++) {
+                const expectedIndex = i + 1;
+                const actualIndex = parseInt(sortedVars[i].substring(1));
+                if (actualIndex !== expectedIndex) {
+                    console.warn(`Warning: Variables not consecutive. Found x${actualIndex}, expected x${expectedIndex}`);
+                }
+            }
+
             const matrix = [];
             for (let eq of equations) {
                 const row = [];
+                
                 for (let varName of sortedVars) {
                     const coeff = eq[varName] || 0;
                     row.push(Fraction.fromDecimal(coeff));
                 }
+                
                 const constant = -(eq['constant'] || 0);
                 row.push(Fraction.fromDecimal(constant));
+                
                 matrix.push(row);
             }
-            return { matrix: matrix, variables: sortedVars };
+
+            return { matrix, variables: sortedVars };
         }
 
-        function matrixToHTML(matrix, title, showDecimals) {
+        function loadEquationExample(exNum) {
+            let equations = [];
+            
+            switch(exNum) {
+                case 1:
+                    equations = [
+                        'x1 + x2 = 3',
+                        '2x1 - x2 = 0'
+                    ];
+                    break;
+                case 2:
+                    equations = [
+                        '2x1 + x2 - x3 = 8',
+                        '-3x1 - x2 + 2x3 = -11',
+                        '-2x1 + x2 + 2x3 = -3'
+                    ];
+                    break;
+                case 3:
+                    equations = [
+                        'sqrt(2)*x1 + x2 = 5',
+                        'cos(pi/3)*x1 + sin(pi/6)*x2 = 2',
+                        'x1 - x2 = 1'
+                    ];
+                    break;
+                case 4:
+                    equations = [
+                        'x1 + 2x2 - x3 + x4 = 10',
+                        '2x1 - x2 + 3x3 - 2x4 = 5',
+                        'x1 + x2 + x3 + x4 = 8',
+                        '3x1 - x2 + 2x3 + x4 = 12'
+                    ];
+                    break;
+            }
+
+            equationState.equations = equations;
+            renderEquationInputs();
+        }
+
+        // ===== SOLVER (UNCHANGED) =====
+
+        function matrixToHTML(matrix, title = "Matrix", showDecimals = false) {
             const rows = matrix.length;
             const cols = matrix[0].length;
-            let html = '<div class="matrix-display"><strong>' + title + ' [' + rows + '×' + cols + ']:</strong><table>';
+
+            let html = `<div class="matrix-display">`;
+            html += `<strong>${title} [${rows}×${cols}]:</strong><table>`;
+            
             html += '<tr><th></th>';
             for (let j = 0; j < cols; j++) {
-                if (j === cols - 1) html += '<th style="border-left: 3px solid #667eea;">b</th>';
-                else html += '<th>x' + (j + 1) + '</th>';
+                if (j === cols - 1) {
+                    html += '<th style="border-left: 3px solid #667eea;">b</th>';
+                } else {
+                    html += `<th>x${j + 1}</th>`;
+                }
             }
             html += '</tr>';
+
             for (let i = 0; i < rows; i++) {
-                html += '<tr><th>R' + (i + 1) + '</th>';
+                html += '<tr>';
+                html += `<th>R${i + 1}</th>`;
+                
                 for (let j = 0; j < cols; j++) {
                     const className = (j === cols - 1) ? 'augmented-separator' : '';
                     const value = matrix[i][j];
                     let displayValue;
+                    
                     if (showDecimals) {
                         const decimal = value.toNumber();
-                        displayValue = value.toString() + '<br><small style="color: #666;">(' + decimal.toFixed(4) + ')</small>';
-                    } else displayValue = value.toString();
-                    html += '<td class="' + className + '">' + displayValue + '</td>';
+                        displayValue = `${value.toString()}<br><small style="color: #666;">(${decimal.toFixed(4)})</small>`;
+                    } else {
+                        displayValue = value.toString();
+                    }
+                    
+                    html += `<td class="${className}">${displayValue}</td>`;
                 }
                 html += '</tr>';
             }
+
             html += '</table></div>';
             return html;
         }
 
-        function copyMatrix(matrix) { return matrix.map(row => row.map(val => new Fraction(val.num, val.den))); }
-        function swapRows(matrix, row1, row2) { [matrix[row1], matrix[row2]] = [matrix[row2], matrix[row1]]; }
-        function multiplyRow(matrix, row, scalar) {
-            for (let j = 0; j < matrix[0].length; j++) matrix[row][j] = matrix[row][j].multiply(scalar);
+        function copyMatrix(matrix) {
+            return matrix.map(row => row.map(val => new Fraction(val.num, val.den)));
         }
+
+        function swapRows(matrix, row1, row2) {
+            [matrix[row1], matrix[row2]] = [matrix[row2], matrix[row1]];
+        }
+
+        function multiplyRow(matrix, row, scalar) {
+            for (let j = 0; j < matrix[0].length; j++) {
+                matrix[row][j] = matrix[row][j].multiply(scalar);
+            }
+        }
+
         function addMultipleOfRow(matrix, targetRow, sourceRow, scalar) {
             for (let j = 0; j < matrix[0].length; j++) {
                 matrix[targetRow][j] = matrix[targetRow][j].add(matrix[sourceRow][j].multiply(scalar));
             }
         }
+
         function findPivot(matrix, startRow, col) {
             for (let i = startRow; i < matrix.length; i++) {
-                if (!matrix[i][col].isZero()) return i;
+                if (!matrix[i][col].isZero()) {
+                    return i;
+                }
             }
             return null;
         }
@@ -631,55 +1339,96 @@
             const rows = matrix.length;
             const cols = matrix[0].length;
             steps = [];
-            steps.push({ matrix: copyMatrix(matrix), description: "Initial augmented matrix [A | b]" });
+
+            steps.push({
+                matrix: copyMatrix(matrix),
+                description: "Initial augmented matrix [A | b]"
+            });
+
             let currentRow = 0;
+
             for (let col = 0; col < cols - 1; col++) {
                 if (currentRow >= rows) break;
+
                 const pivotRow = findPivot(matrix, currentRow, col);
+
                 if (pivotRow === null) {
-                    steps.push({ matrix: copyMatrix(matrix), description: 'Column ' + (col + 1) + ': No pivot found (free variable)' });
+                    steps.push({
+                        matrix: copyMatrix(matrix),
+                        description: `Column ${col + 1}: No pivot found (free variable)`
+                    });
                     continue;
                 }
+
                 if (pivotRow !== currentRow) {
                     swapRows(matrix, currentRow, pivotRow);
-                    steps.push({ matrix: copyMatrix(matrix), description: 'Swap R' + (currentRow + 1) + ' ↔ R' + (pivotRow + 1) });
+                    steps.push({
+                        matrix: copyMatrix(matrix),
+                        description: `Swap R${currentRow + 1} ↔ R${pivotRow + 1}`
+                    });
                 }
+
                 const pivotValue = matrix[currentRow][col];
                 if (!pivotValue.isOne()) {
                     const scalar = new Fraction(1, 1).divide(pivotValue);
                     multiplyRow(matrix, currentRow, scalar);
-                    steps.push({ matrix: copyMatrix(matrix), description: 'R' + (currentRow + 1) + ' → R' + (currentRow + 1) + ' / ' + pivotValue.toString() });
+                    steps.push({
+                        matrix: copyMatrix(matrix),
+                        description: `R${currentRow + 1} → R${currentRow + 1} / ${pivotValue.toString()}`
+                    });
                 }
+
                 for (let i = currentRow + 1; i < rows; i++) {
                     if (!matrix[i][col].isZero()) {
                         const factor = matrix[i][col].negate();
                         addMultipleOfRow(matrix, i, currentRow, factor);
-                        steps.push({ matrix: copyMatrix(matrix), description: 'R' + (i + 1) + ' → R' + (i + 1) + ' + (' + factor.toString() + ') × R' + (currentRow + 1) });
+                        steps.push({
+                            matrix: copyMatrix(matrix),
+                            description: `R${i + 1} → R${i + 1} + (${factor.toString()}) × R${currentRow + 1}`
+                        });
                     }
                 }
+
                 currentRow++;
             }
+
             for (let col = cols - 2; col >= 0; col--) {
                 let pivotRow = null;
                 for (let i = 0; i < rows; i++) {
                     if (matrix[i][col].isOne()) {
                         let isLeading = true;
                         for (let j = 0; j < col; j++) {
-                            if (!matrix[i][j].isZero()) { isLeading = false; break; }
+                            if (!matrix[i][j].isZero()) {
+                                isLeading = false;
+                                break;
+                            }
                         }
-                        if (isLeading) { pivotRow = i; break; }
+                        if (isLeading) {
+                            pivotRow = i;
+                            break;
+                        }
                     }
                 }
+
                 if (pivotRow === null) continue;
+
                 for (let i = 0; i < pivotRow; i++) {
                     if (!matrix[i][col].isZero()) {
                         const factor = matrix[i][col].negate();
                         addMultipleOfRow(matrix, i, pivotRow, factor);
-                        steps.push({ matrix: copyMatrix(matrix), description: 'R' + (i + 1) + ' → R' + (i + 1) + ' + (' + factor.toString() + ') × R' + (pivotRow + 1) });
+                        steps.push({
+                            matrix: copyMatrix(matrix),
+                            description: `R${i + 1} → R${i + 1} + (${factor.toString()}) × R${pivotRow + 1}`
+                        });
                     }
                 }
             }
-            steps.push({ matrix: copyMatrix(matrix), description: "✅ FINAL RREF: [I | s]" });
+
+            steps.push({
+                matrix: copyMatrix(matrix),
+                description: "✅ FINAL RREF: [I | s]"
+            });
+
             return matrix;
         }
 
@@ -687,47 +1436,86 @@
             const rows = rrefMatrix.length;
             const cols = rrefMatrix[0].length;
             const nVars = cols - 1;
+
             const pivotCols = [];
             const pivotRows = [];
+
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < nVars; j++) {
                     if (rrefMatrix[i][j].isOne()) {
                         let isLeading = true;
                         for (let k = 0; k < j; k++) {
-                            if (!rrefMatrix[i][k].isZero()) { isLeading = false; break; }
+                            if (!rrefMatrix[i][k].isZero()) {
+                                isLeading = false;
+                                break;
+                            }
                         }
-                        if (isLeading && !pivotCols.includes(j)) { pivotCols.push(j); pivotRows.push(i); break; }
+                        if (isLeading && !pivotCols.includes(j)) {
+                            pivotCols.push(j);
+                            pivotRows.push(i);
+                            break;
+                        }
                     }
                 }
             }
+
             for (let i = 0; i < rows; i++) {
                 let allZero = true;
                 for (let j = 0; j < nVars; j++) {
-                    if (!rrefMatrix[i][j].isZero()) { allZero = false; break; }
+                    if (!rrefMatrix[i][j].isZero()) {
+                        allZero = false;
+                        break;
+                    }
                 }
                 if (allZero && !rrefMatrix[i][nVars].isZero()) {
-                    return { type: 'no_solution', pivotCols: pivotCols, freeVars: [], message: 'Inconsistent system: No solution exists' };
+                    return {
+                        type: 'no_solution',
+                        pivotCols: pivotCols,
+                        freeVars: [],
+                        message: 'Inconsistent system: No solution exists'
+                    };
                 }
             }
+
             const freeVars = [];
             for (let j = 0; j < nVars; j++) {
-                if (!pivotCols.includes(j)) freeVars.push(j);
+                if (!pivotCols.includes(j)) {
+                    freeVars.push(j);
+                }
             }
+
             if (freeVars.length === 0) {
                 const solution = new Array(nVars).fill(new Fraction(0, 1));
                 for (let idx = 0; idx < pivotCols.length; idx++) {
                     solution[pivotCols[idx]] = rrefMatrix[pivotRows[idx]][nVars];
                 }
-                return { type: 'unique', pivotCols: pivotCols, freeVars: freeVars, solution: solution, message: 'Unique solution found' };
+                return {
+                    type: 'unique',
+                    pivotCols: pivotCols,
+                    freeVars: freeVars,
+                    solution: solution,
+                    message: 'Unique solution found'
+                };
             } else {
                 const solution = {};
                 for (let idx = 0; idx < pivotCols.length; idx++) {
                     const col = pivotCols[idx];
                     const row = pivotRows[idx];
-                    solution[col] = { constant: rrefMatrix[row][nVars], freeVarCoeffs: {} };
-                    for (let fv of freeVars) solution[col].freeVarCoeffs[fv] = rrefMatrix[row][fv].negate();
+                    solution[col] = {
+                        constant: rrefMatrix[row][nVars],
+                        freeVarCoeffs: {}
+                    };
+                    for (let fv of freeVars) {
+                        solution[col].freeVarCoeffs[fv] = rrefMatrix[row][fv].negate();
+                    }
                 }
-                return { type: 'infinite', pivotCols: pivotCols, freeVars: freeVars, solution: solution, message: 'Infinite solutions: ' + freeVars.length + ' free variable(s)' };
+                return {
+                    type: 'infinite',
+                    pivotCols: pivotCols,
+                    freeVars: freeVars,
+                    solution: solution,
+                    message: `Infinite solutions: ${freeVars.length} free variable(s)`
+                };
             }
         }
 
@@ -735,7 +1523,10 @@
             let html = '<div class="solution-box';
             if (analysis.type === 'no_solution') html += ' no-solution';
             if (analysis.type === 'infinite') html += ' infinite-solution';
-            html += '"><div class="solution-title">✨ ' + analysis.message + '</div>';
+            html += '">';
+
+            html += `<div class="solution-title">✨ ${analysis.message}</div>`;
+
             if (analysis.type === 'no_solution') {
                 html += '<p>The system is inconsistent. There exists a row [0 0 ... 0 | b] where b ≠ 0.</p>';
             } else if (analysis.type === 'unique') {
@@ -743,37 +1534,41 @@
                 for (let i = 0; i < analysis.solution.length; i++) {
                     const frac = analysis.solution[i];
                     const decimal = frac.toNumber().toFixed(4);
-                    html += '<div class="solution-item">x<sub>' + (i + 1) + '</sub> = ' + frac.toString() + ' <span style="color: #666; margin-left: 10px;">≈ ' + decimal + '</span></div>';
+                    html += `<div class="solution-item">x<sub>${i + 1}</sub> = ${frac.toString()} <span style="color: #666; margin-left: 10px;">≈ ${decimal}</span></div>`;
                 }
             } else if (analysis.type === 'infinite') {
-                html += '<div><strong>Parametric Form:</strong></div><p>Let the free variables be parameters:</p>';
+                html += '<div><strong>Parametric Form:</strong></div>';
+                html += '<p>Let the free variables be parameters:</p>';
                 for (let i = 0; i < analysis.freeVars.length; i++) {
                     const fv = analysis.freeVars[i];
-                    html += '<div class="solution-item">x<sub>' + (fv + 1) + '</sub> = t<sub>' + (i + 1) + '</sub></div>';
+                    html += `<div class="solution-item">x<sub>${fv + 1}</sub> = t<sub>${i + 1}</sub></div>`;
                 }
                 html += '<p>Then the basic variables are:</p>';
+                
                 const sortedKeys = Object.keys(analysis.solution).map(Number).sort((a, b) => a - b);
                 for (let varIdx of sortedKeys) {
                     const sol = analysis.solution[varIdx];
                     let expr = sol.constant.toString();
                     let decimalExpr = sol.constant.toNumber().toFixed(4);
+                    
                     for (let i = 0; i < analysis.freeVars.length; i++) {
                         const fv = analysis.freeVars[i];
                         const coeff = sol.freeVarCoeffs[fv];
                         if (!coeff.isZero()) {
                             if (coeff.num > 0) {
-                                expr += ' + ' + coeff.toString() + '·t<sub>' + (i + 1) + '</sub>';
-                                decimalExpr += ' + ' + coeff.toNumber().toFixed(4) + '·t<sub>' + (i + 1) + '</sub>';
+                                expr += ` + ${coeff.toString()}·t<sub>${i + 1}</sub>`;
+                                decimalExpr += ` + ${coeff.toNumber().toFixed(4)}·t<sub>${i + 1}</sub>`;
                             } else {
-                                expr += ' - ' + coeff.negate().toString() + '·t<sub>' + (i + 1) + '</sub>';
-                                decimalExpr += ' - ' + coeff.negate().toNumber().toFixed(4) + '·t<sub>' + (i + 1) + '</sub>';
+                                expr += ` - ${coeff.negate().toString()}·t<sub>${i + 1}</sub>`;
+                                decimalExpr += ` - ${coeff.negate().toNumber().toFixed(4)}·t<sub>${i + 1}</sub>`;
                             }
                         }
                     }
-                    html += '<div class="solution-item">x<sub>' + varIdx + 1 + '</sub> = ' + expr + '<br><small style="color: #666;">≈ ' + decimalExpr + '</small></div>';
+                    html += `<div class="solution-item">x<sub>${varIdx + 1}</sub> = ${expr}<br><small style="color: #666;">≈ ${decimalExpr}</small></div>`;
                 }
                 html += '<p><em>where t<sub>1</sub>, t<sub>2</sub>, ... are free parameters (any real numbers)</em></p>';
             }
+
             html += '</div>';
             return html;
         }
@@ -782,54 +1577,92 @@
             try {
                 let matrix;
                 let parsedInfo = '';
+
                 if (currentMode === 'matrix') {
                     matrix = getMatrixFromInput();
-                    if (matrix.length === 0) { alert('Please generate a matrix first!'); return; }
+                    if (matrix.length === 0) {
+                        alert('Please generate a matrix first!');
+                        return;
+                    }
                 } else {
                     const result = equationsToMatrix();
                     matrix = result.matrix;
-                    if (matrix.length === 0) { alert('Please enter some equations first!'); return; }
-                    parsedInfo = '<div class="info-box" style="background: #e8f5e9; border-color: #4caf50;"><strong>✅ Equations Parsed Successfully</strong><br>Found ' + result.variables.length + ' variables: ' + result.variables.map((v, i) => 'x<sub>' + (i+1) + '</sub>').join(', ') + '<br>Generated ' + matrix.length + '×' + matrix[0].length + ' augmented matrix [A | b]</div>';
+                    
+                    if (matrix.length === 0) {
+                        alert('Please enter some equations first!');
+                        return;
+                    }
+
+                    parsedInfo = `<div class="info-box" style="background: #e8f5e9; border-color: #4caf50;">
+                        <strong>✅ Equations Parsed Successfully</strong><br>
+                        Found ${result.variables.length} variables: ${result.variables.map((v, i) => `x<sub>${i+1}</sub>`).join(', ')}<br>
+                        Generated ${matrix.length}×${matrix[0].length} augmented matrix [A | b]
+                    </div>`;
                 }
+
                 const rows = matrix.length;
                 const cols = matrix[0].length;
+
                 if (rows > 50 || cols > 50) {
-                    const proceed = window.confirm ? window.confirm('Processing ' + rows + '×' + cols + ' matrix. Continue?') : true;
+                    const proceed = window.confirm(`Processing a ${rows}×${cols} matrix. This may take some time. Continue?`);
                     if (!proceed) return;
                 }
+
                 if (rows > 20 || cols > 20) {
-                    document.getElementById('resultSection').innerHTML = '<div style="text-align: center; padding: 40px;"><h2>⏳ Computing RREF...</h2><p>Please wait...</p></div>';
+                    document.getElementById('resultSection').innerHTML = '<div style="text-align: center; padding: 40px;"><h2>⏳ Computing RREF...</h2><p>Please wait, processing large matrix...</p></div>';
                     document.getElementById('resultSection').classList.add('active');
                 }
+
                 setTimeout(() => {
                     try {
                         currentMatrix = matrix;
                         const rrefMatrix = rref(matrix);
                         const analysis = analyzeSolution(rrefMatrix);
+
                         let html = '<h2 style="color: #667eea; margin-bottom: 20px;">📊 Solution Results</h2>';
-                        if (parsedInfo) html += parsedInfo;
-                        html += '<div class="step"><div class="step-title">Final RREF Matrix:</div>';
+
+                        if (parsedInfo) {
+                            html += parsedInfo;
+                        }
+
+                        html += '<div class="step">';
+                        html += '<div class="step-title">Final RREF Matrix:</div>';
                         html += matrixToHTML(rrefMatrix, "RREF", true);
                         html += '</div>';
+
                         html += displaySolution(analysis, rrefMatrix);
-                        html += '<div class="toggle-steps"><button onclick="toggleSteps()">📋 Show/Hide Step-by-Step Solution</button></div>';
-                        html += '<div id="stepsContainer" class="steps-container"><h3 style="color: #667eea; margin: 20px 0;">Step-by-Step Process:</h3>';
-                        const maxSteps = (rows > 20 || cols > 20) ? 100 : steps.length;
-                        if (steps.length > maxSteps) html += '<p style="color: #ff9800; background: #fff4e0; padding: 10px; border-radius: 5px;">ℹ️ Showing first ' + maxSteps + ' of ' + steps.length + ' steps</p>';
-                        for (let i = 0; i < Math.min(steps.length, maxSteps); i++) {
-                            html += '<div class="step"><div class="step-title">Step ' + (i + 1) + ': ' + steps[i].description + '</div>';
-                            html += matrixToHTML(steps[i].matrix, 'Matrix after step ' + (i + 1), false);
+
+                        html += '<div class="toggle-steps">';
+                        html += '<button onclick="toggleSteps()">📋 Show/Hide Step-by-Step Solution</button>';
+                        html += '</div>';
+
+                        html += '<div id="stepsContainer" class="steps-container">';
+                        html += '<h3 style="color: #667eea; margin: 20px 0;">Step-by-Step Process:</h3>';
+                        
+                        const maxStepsToShow = (rows > 20 || cols > 20) ? 100 : steps.length;
+                        if (steps.length > maxStepsToShow) {
+                            html += `<p style="color: #ff9800; background: #fff4e0; padding: 10px; border-radius: 5px;">
+                                ℹ️ Showing first ${maxStepsToShow} of ${steps.length} steps (matrix is large). Final result is complete.
+                            </p>`;
+                        }
+                        
+                        for (let i = 0; i < Math.min(steps.length, maxStepsToShow); i++) {
+                            html += '<div class="step">';
+                            html += `<div class="step-title">Step ${i + 1}: ${steps[i].description}</div>`;
+                            html += matrixToHTML(steps[i].matrix, `Matrix after step ${i + 1}`);
                             html += '</div>';
                         }
                         html += '</div>';
+
                         document.getElementById('resultSection').innerHTML = html;
                         document.getElementById('resultSection').classList.add('active');
                         document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
                     } catch (error) {
-                        alert('Error: ' + error.message);
+                        alert('Error during computation: ' + error.message);
                         console.error(error);
                     }
                 }, 100);
+
             } catch (error) {
                 alert('Error: ' + error.message);
                 console.error(error);
@@ -839,6 +1672,7 @@
         function toggleCollapsible(id) {
             const content = document.getElementById(id);
             const header = content.previousElementSibling;
+            
             content.classList.toggle('expanded');
             header.classList.toggle('active');
         }
@@ -849,33 +1683,64 @@
         }
 
         function clearAll() {
-            const userConfirmed = window.confirm ? window.confirm('Clear all data? This cannot be undone.') : true;
-            if (!userConfirmed) return;
+            // Simple confirmation - just clear without modal since we're sandboxed
+            const userConfirmed = window.confirm ? window.confirm('Are you sure you want to clear all data? This cannot be undone.') : true;
+            
+            if (!userConfirmed) {
+                return;
+            }
+            
             try {
-                matrixState = { values: [], maxRows: 2, maxCols: 2 };
+                // Reset state with proper initialization
+                matrixState = {
+                    values: [],
+                    maxRows: 2,
+                    maxCols: 2
+                };
+                
+                // Initialize empty matrix values
                 for (let i = 0; i < 2; i++) {
                     matrixState.values[i] = [];
-                    for (let j = 0; j < 3; j++) matrixState.values[i][j] = '0';
+                    for (let j = 0; j < 3; j++) {
+                        matrixState.values[i][j] = '0';
+                    }
                 }
-                equationState = { equations: ['', ''] };
+                
+                equationState = {
+                    equations: ['', '']
+                };
+                
+                // Reset UI
                 document.getElementById('resultSection').innerHTML = '';
                 document.getElementById('resultSection').classList.remove('active');
                 document.getElementById('numRows').value = 2;
                 document.getElementById('numCols').value = 2;
                 document.getElementById('numEquations').value = 2;
-                if (currentMode === 'matrix') renderMatrixInputs(2, 2);
-                else renderEquationInputs();
+                
+                // Regenerate based on current mode
+                if (currentMode === 'matrix') {
+                    renderMatrixInputs(2, 2);
+                } else {
+                    renderEquationInputs();
+                }
+                
+                console.log('Clear all completed successfully');
             } catch (error) {
                 console.error('Error in clearAll:', error);
                 alert('Error clearing data: ' + error.message);
             }
         }
 
+        // ===== INITIALIZATION =====
         window.onload = function() {
+            // Initialize matrix state
             for (let i = 0; i < 2; i++) {
                 matrixState.values[i] = [];
-                for (let j = 0; j < 3; j++) matrixState.values[i][j] = '0';
+                for (let j = 0; j < 3; j++) {
+                    matrixState.values[i][j] = '0';
+                }
             }
+            
             renderMatrixInputs(2, 2);
             renderEquationInputs();
         };
